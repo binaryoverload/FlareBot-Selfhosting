@@ -46,7 +46,7 @@ import stream.flarebot.flarebot.api.ApiRequester;
 import stream.flarebot.flarebot.api.ApiRoute;
 import stream.flarebot.flarebot.audio.PlayerListener;
 import stream.flarebot.flarebot.commands.*;
-import stream.flarebot.flarebot.database.CassandraController;
+import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.database.RedisController;
 import stream.flarebot.flarebot.metrics.Metrics;
 import stream.flarebot.flarebot.mod.nino.NINOListener;
@@ -80,6 +80,7 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -94,6 +95,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -108,11 +110,9 @@ public class FlareBot {
     public static final AtomicBoolean NOVOICE_UPDATING = new AtomicBoolean(false);
     private static final Map<String, Logger> LOGGERS;
     private static FlareBot instance;
-    private static String youtubeApi;
-    private static JSONConfig config;
-    private static boolean apiEnabled = true;
-    private static boolean testBot = false;
     private static String version = null;
+
+    private Client client;
 
     static {
         handleLogArchive("latest.log");
@@ -125,109 +125,44 @@ public class FlareBot {
     private Map<String, PlayerCache> playerCache = new ConcurrentHashMap<>();
     private Events events;
     private ShardManager shardManager;
-    private PlayerManager musicManager;
+
     private long startTime;
     private Runtime runtime = Runtime.getRuntime();
     private WebhookClient importantHook;
     private CommandManager commandManager;
 
-    private static final DataInterceptor dataInterceptor = new DataInterceptor(DataInterceptor.RequestSender.JDA);
-    private static OkHttpClient client =
-            new OkHttpClient.Builder().connectionPool(new ConnectionPool(4, 10, TimeUnit.SECONDS))
-                    .addInterceptor(dataInterceptor).build();
-
-    private AnalyticsHandler analyticsHandler;
-
     private final Set<FutureAction> futureActions = new ConcurrentHashSet<>();
 
     public static void main(String[] args) {
-        Spark.port(8080);
-        try {
-            File file = new File("config.json");
-            if (!file.exists() && !file.createNewFile())
-                throw new IllegalStateException("Can't create config file!");
-            try {
-                config = new JSONConfig(new File("config.json"), '.', new char[]{'-', '_', '<', '>'});
-            } catch (NullPointerException e) {
-                LOGGER.error("Invalid JSON!", e);
-                System.exit(1);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Unable to create config.json!", e);
-            System.exit(1);
-        }
+        (instance = new FlareBot()).init();
+    }
 
-        List<String> required = new ArrayList<>();
-        required.add("bot.token");
-        required.add("cassandra.username");
-        required.add("cassandra.password");
-        required.add("misc.yt");
-        required.add("redis.host");
-        required.add("redis.port");
-        required.add("redis.password");
-        required.add("sentry.dsn");
-
-        boolean good = true;
-        for (String req : required) {
-            if (config.getString(req) != null) {
-                if (!config.getString(req).isPresent()) {
-                    good = false;
-                    LOGGER.error("Missing required json " + req);
-                }
-            } else {
-                good = false;
-                LOGGER.error("Missing required json " + req);
-            }
-        }
-
-        if (!good) {
-            LOGGER.error("One or more of the required JSON objects where missing. Exiting to prevent problems");
-            System.exit(1);
-        }
-
-        new CassandraController(config);
-        new RedisController(config);
-
-        FlareBot.youtubeApi = config.getString("misc.yt").get();
-
-        if (config.getArray("options").isPresent()) {
-            for (JsonElement em : config.getArray("options").get()) {
-                if (em.getAsString() != null) {
-                    if (em.getAsString().equals("tb")) {
-                        FlareBot.testBot = true;
-                    }
-                    if (em.getAsString().equals("debug")) {
-                        ((ch.qos.logback.classic.Logger) LoggerFactory
-                                .getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME))
-                                .setLevel(Level.DEBUG);
-                    }
-                }
-            }
-        }
-
-        SentryClient sentryClient = Sentry.init(config.getString("sentry.dsn").get()
-                + "?stacktrace.app.packages=stream.flarebot.flarebot");
-        sentryClient.setEnvironment(testBot ? "TestBot" : "Production");
-        sentryClient.setServerName(testBot ? "Test Server" : "Production Server");
-        sentryClient.setRelease(GitHandler.getLatestCommitId());
-
-        if (!config.getString("misc.apiKey").isPresent() || config.getString("misc.apiKey").get().isEmpty())
-            apiEnabled = false;
+    private void init() {
+        instance = this;
+        /*if (Config.INS.getSentryDsn() != null) {
+            sentryClient = Sentry.init(Config.INS.getSentryDsn()
+                    + "?stacktrace.app.packages=stream.flarebot.flarebot");
+            sentryClient.setEnvironment(Config.INS.getEnvironment().toString());
+            sentryClient.setRelease(GitHandler.getLatestCommitId());
+            logger.info("Started Sentry in '" + Config.INS.getEnvironment().toString()
+                    + "' environment on '" + GitHandler.getFullLatestCommitId());
+        }*/
 
         Thread.setDefaultUncaughtExceptionHandler(((t, e) -> LOGGER.error("Uncaught exception in thread " + t, e)));
         Thread.currentThread()
                 .setUncaughtExceptionHandler(((t, e) -> LOGGER.error("Uncaught exception in thread " + t, e)));
-        try {
-            (instance = new FlareBot()).init();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        DatabaseManager.init();
+        new DataHandler().init();
+
+        client = new Client();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> client.stop()));
+
+        LOGGER.info("Finished init, starting JDA");
+        run();
     }
 
-    @Nonnull
-    public static OkHttpClient getOkHttpClient() {
-        return client;
-    }
 
     // Disabled for now.
     // TODO: Make sure the API has a way to handle this and also update that page.
@@ -238,14 +173,6 @@ public class FlareBot {
         MessageUtils.sendErrorMessage(s, channel);
         //String id = instance.postToApi("postReport", "error", message);
         //MessageUtils.sendErrorMessage(s + "\nThe error has been reported! You can follow the report on the website, https://flarebot.stream/report?id=" + id, channel);
-    }
-
-    public static String getStatusHook() {
-        return config.getString("bot.statusHook").isPresent() ? config.getString("bot.statusHook").get() : null;
-    }
-
-    public static String getYoutubeKey() {
-        return youtubeApi;
     }
 
     private static Logger getLog(String name) {
@@ -322,87 +249,12 @@ public class FlareBot {
         return events;
     }
 
-    public void init() throws InterruptedException {
-        LOGGER.info("Starting init!");
-        manager = new FlareBotManager();
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-
-        Metrics.setup();
-
-        RestAction.DEFAULT_FAILURE = t -> {
-            if (t instanceof ErrorResponseException) {
-                ErrorResponseException e = (ErrorResponseException) t;
-                Metrics.failedRestActions.labels(String.valueOf(e.getErrorCode())).inc();
-                if (e.getErrorCode() == -1) // Socket timeout
-                    return;
-            }
-            LOGGER.warn("Failed RestAction - " + t.getMessage());
-        };
-
-        events = new Events(this);
-        LOGGER.info("Starting builders");
-
-        try {
-            shardManager = new DefaultShardManagerBuilder()
-                    .addEventListeners(events)
-                    .addEventListeners(new ModlogEvents())
-                    .addEventListeners(Metrics.instance().jdaEventMetricsListener)
-                    .addEventListeners(new NINOListener())
-                    .setToken(config.getString("bot.token").get())
-                    .setAudioSendFactory(new NativeAudioSendFactory())
-                    .setWebsocketFactory(new WebSocketFactory(new WebSocketListener()))
-                    .setShardsTotal(-1)
-                    //.setGameProvider(shardId -> setStatus("_help | _invite", shardId))
-                    .setHttpClientBuilder(client.newBuilder())
-                    .setBulkDeleteSplittingEnabled(false)
-                    .build();
-            commandManager = new CommandManager();
-        } catch (Exception e) {
-            LOGGER.error("Could not log in!", e);
-            Thread.sleep(500);
-            System.exit(1);
-            return;
-        }
-        System.setErr(new PrintStream(new OutputStream() {
-            // Nothing really so all good.
-            @Override
-            public void write(int b) {
-            }
-        })); // No operation STDERR. Will not do much of anything, except to filter out some Jsoup spam
-
-        manager = new FlareBotManager();
-        manager.executeCreations();
-    }
-
     protected void run() {
         if (RUNNING.getAndSet(true))
             return;
         LOGGER.info("Starting run sequence");
-        try {
-            musicManager =
-                    PlayerManager.getPlayerManager(LibraryFactory.getLibrary(new JDAMultiShard(Getters.getShardManager())));
-        } catch (UnknownBindingException e) {
-            LOGGER.error("Failed to initialize musicManager", e);
-        }
-        musicManager.getPlayerCreateHooks()
-                .register(player -> player.getQueueHookManager().register(new QueueListener()));
 
-        // Any migration
-        MigrationHandler migrationHandler = new MigrationHandler();
 
-        LOGGER.info("Loaded " + commandManager.count() + " commands!");
-
-        ApiFactory.bind();
-        LOGGER.info("Bound API");
-
-        musicManager.getPlayerCreateHooks().register(player -> player.addEventListener(new PlayerListener(player)));
-
-        analyticsHandler = new AnalyticsHandler();
-        analyticsHandler.registerAnalyticSender(new ActivityAnalytics());
-        analyticsHandler.registerAnalyticSender(new GuildAnalytics());
-        analyticsHandler.registerAnalyticSender(new GuildCountAnalytics());
-        LOGGER.info("Registered analytics - Running");
-        analyticsHandler.run(isTestBot() ? 1000 : -1);
 
 
         GeneralUtils.methodErrorHandler(LOGGER, null,
@@ -451,24 +303,23 @@ public class FlareBot {
     }
 
     private void loadFutureTasks() {
-        if (FlareBot.testBot) return;
-        final int[] loaded = {0};
-        CassandraController.runTask(session -> {
-            ResultSet set = session.execute("SELECT * FROM flarebot.future_tasks");
-            Row row;
-            while ((row = set.one()) != null) {
+        if (Config.INS.isTestBot()) return;
+        AtomicReference<Integer> loaded = new AtomicReference<>(0);
+        DatabaseManager.run(connection -> {
+            ResultSet set = connection.prepareCall("SELECT * FROM flarebot.future_tasks").executeQuery();
+            while (set.next()) {
                 FutureAction fa =
-                        new FutureAction(row.getLong("guild_id"), row.getLong("channel_id"), row.getLong("responsible"),
-                                row.getLong("target"), row.getString("content"), new DateTime(row.getTimestamp("expires_at")),
-                                new DateTime(row.getTimestamp("created_at")),
-                                FutureAction.Action.valueOf(row.getString("action").toUpperCase()));
+                        new FutureAction(set.getLong("guild_id"), set.getLong("channel_id"), set.getLong("responsible"),
+                                set.getLong("target"), set.getString("content"), new DateTime(set.getTimestamp("expires_at")),
+                                new DateTime(set.getTimestamp("created_at")),
+                                FutureAction.Action.valueOf(set.getString("action").toUpperCase()));
 
                 try {
                     if (new DateTime().isAfter(fa.getExpires()))
                         fa.execute();
                     else {
                         fa.queue();
-                        loaded[0]++;
+                        loaded.getAndUpdate(i -> i++);
                     }
                 } catch (NullPointerException e) {
                     LOGGER.error("Failed to execute/queue future task"
@@ -478,7 +329,7 @@ public class FlareBot {
             }
         });
 
-        LOGGER.info("Loaded " + loaded[0] + " future tasks");
+        LOGGER.info("Loaded " + loaded.get() + " future tasks");
     }
 
     // TODO: Spread this out a little so we don't just burst.
@@ -524,45 +375,6 @@ public class FlareBot {
         }.delay(LocalDateTime.now().until(LocalDate.now()
                 .plusDays(LocalDateTime.now().getHour() >= 13 ? 1 : 0)
                 .atTime(13, 0, 0), ChronoUnit.MILLIS));
-    }
-
-    private void sendData() {
-        Guild g = Getters.getOfficialGuild();
-        JSONObject data = new JSONObject()
-                .put("guilds", Getters.getGuildCache().size())
-                //.put("loaded_guilds", FlareBotManager.instance().getGuilds().size())
-                .put("official_guild_users", g != null ? g.getMemberCache().size() : -1)
-                .put("text_channels", Getters.getTextChannelCache().size())
-                .put("voice_channels", Getters.getVoiceChannelCache().size())
-                .put("connected_voice_channels", Getters.getConnectedVoiceChannels())
-                .put("active_voice_channels", Getters.getActiveVoiceChannels())
-                .put("num_queued_songs", getMusicManager().getPlayers().stream()
-                        .mapToInt(player -> player.getPlaylist().size()).sum())
-                .put("ram", (((runtime.totalMemory() - runtime.freeMemory()) / 1024) / 1024) + "MB")
-                .put("uptime", getUptime())
-                .put("http_requests", dataInterceptor.getRequests().intValue());
-
-        ApiRequester.requestAsync(ApiRoute.UPDATE_DATA, data);
-    }
-
-    private void sendCommands() {
-        JSONObject obj = new JSONObject();
-        JSONArray array = new JSONArray();
-        for (Command cmd : commandManager.getCommands()) {
-            JSONObject cmdObj = new JSONObject()
-                    .put("command", cmd.getCommand())
-                    .put("description", cmd.getDescription())
-                    .put("permission", cmd.getPermission() == null ? "" : cmd.getPermission())
-                    .put("type", cmd.getType().toString());
-            JSONArray aliases = new JSONArray();
-            for (String s : cmd.getAliases())
-                aliases.put(s);
-            cmdObj.put("aliases", aliases);
-            array.put(cmdObj);
-        }
-        obj.put("commands", array);
-
-        ApiRequester.requestAsync(ApiRoute.COMMANDS, obj);
     }
 
     public void quit(boolean update) {
@@ -651,7 +463,6 @@ public class FlareBot {
             scheduledFuture.cancel(false); // No tasks in theory should block this or cause issues. We'll see
         for (JDA client : shardManager.getShards())
             client.removeEventListener(events); //todo: Make a replacement for the array
-        sendData();
         manager.getGuilds().invalidateAll();
         shardManager.shutdown();
         LOGGER.info("Finished saving!");

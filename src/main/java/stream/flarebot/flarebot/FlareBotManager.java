@@ -19,7 +19,6 @@ import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import stream.flarebot.flarebot.annotations.DoNotUse;
 import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.database.CassandraController;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.objects.GuildWrapperLoader;
 import stream.flarebot.flarebot.util.ConfirmUtil;

@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.FlareBotManager;
-import stream.flarebot.flarebot.database.CassandraController;
 import stream.flarebot.flarebot.permissions.Group;
 import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;

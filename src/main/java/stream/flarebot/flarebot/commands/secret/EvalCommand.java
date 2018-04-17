@@ -10,7 +10,6 @@ import net.dv8tion.jda.core.entities.User;
 import org.apache.commons.codec.binary.StringUtils;
 import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.commands.InternalCommand;
-import stream.flarebot.flarebot.database.CassandraController;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageUtils;
 

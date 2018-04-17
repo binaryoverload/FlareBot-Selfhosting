@@ -11,10 +11,11 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.commands.InternalCommand;
-import stream.flarebot.flarebot.database.CassandraController;
+import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageUtils;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,11 +24,11 @@ public class QueryCommand implements InternalCommand {
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
         try {
-            CassandraController.runUnsafeTask(conn -> {
-                ResultSet set = conn.execute(MessageUtils.getMessage(args, 0));
+            DatabaseManager.run(connection -> {
+                ResultSet set = connection.prepareStatement(MessageUtils.getMessage(args, 0)).executeQuery();
                 List<String> header = new ArrayList<>();
                 List<List<String>> table = new ArrayList<>();
-                int columnsCount = set.getColumnDefinitions().size();
+                int columnsCount = set.().size();
                 for (int i = 0; i < columnsCount; i++) {
                     header.add(set.getColumnDefinitions().getName(i));
                 }

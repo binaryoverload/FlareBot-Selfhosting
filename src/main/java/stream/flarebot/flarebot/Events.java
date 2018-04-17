@@ -84,20 +84,11 @@ public class Events extends ListenerAdapter {
     private final Pattern multiSpace = Pattern.compile(" {2,}");
     private final Pattern rip = Pattern.compile("\\brip( [a-zA-Z0-9]+)?\\b", Pattern.CASE_INSENSITIVE);
 
-    private FlareBot flareBot;
-
     private Map<String, Integer> spamMap = new ConcurrentHashMap<>();
 
     private final Map<Integer, Long> shardEventTime = new HashMap<>();
     private final AtomicInteger commandCounter = new AtomicInteger(0);
-
-    private Map<Long, Double> maxButtonClicksPerSec = new HashMap<>();
-    private Map<Long, List<Double>> buttonClicksPerSec = new HashMap<>();
-
-    Events(FlareBot bot) {
-        this.flareBot = bot;
-    }
-
+    
     @Override
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
         if (!event.getGuild().getSelfMember().hasPermission(event.getTextChannel(), Permission.MESSAGE_READ)) return;
@@ -154,12 +145,12 @@ public class Events extends ListenerAdapter {
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         if (event.getMember().getUser().isBot() || event.getMember().getUser().isFake()) return;
-        PlayerCache cache = flareBot.getPlayerCache(event.getMember().getUser().getId());
+        PlayerCache cache = FlareBot.instance().getPlayerCache(event.getMember().getUser().getId());
         cache.setLastSeen(LocalDateTime.now());
         GuildWrapper wrapper = FlareBotManager.instance().getGuild(event.getGuild().getId());
         if (wrapper == null) return;
         if (wrapper.isBlocked()) return;
-        if (flareBot.getManager().getGuild(event.getGuild().getId()).getWelcome() != null) {
+        if (FlareBot.instance().getManager().getGuild(event.getGuild().getId()).getWelcome() != null) {
             Welcome welcome = wrapper.getWelcome();
             if ((welcome.getChannelId() != null && Getters.getChannelById(welcome.getChannelId()) != null)
                     || welcome.isDmEnabled()) {
@@ -285,9 +276,9 @@ public class Events extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-        if (event.getMember().getUser().equals(event.getJDA().getSelfUser()) && flareBot.getMusicManager()
+        if (event.getMember().getUser().equals(event.getJDA().getSelfUser()) && FlareBot.instance().getMusicManager()
                 .hasPlayer(event.getGuild().getId())) {
-            flareBot.getMusicManager().getPlayer(event.getGuild().getId()).setPaused(false);
+            FlareBot.instance().getMusicManager().getPlayer(event.getGuild().getId()).setPaused(false);
         }
         if (event.getMember().getUser().equals(event.getJDA().getSelfUser()))
             return;
@@ -303,8 +294,8 @@ public class Events extends ListenerAdapter {
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
         if (event.getMember().getUser().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
-            if (flareBot.getMusicManager().hasPlayer(event.getGuild().getId())) {
-                flareBot.getMusicManager().getPlayer(event.getGuild().getId()).setPaused(true);
+            if (FlareBot.instance().getMusicManager().hasPlayer(event.getGuild().getId())) {
+                FlareBot.instance().getMusicManager().getPlayer(event.getGuild().getId()).setPaused(true);
             }
             if (Getters.getActiveVoiceChannels() == 0 && FlareBot.NOVOICE_UPDATING.get()) {
                 Constants.getImportantLogChannel()
@@ -337,7 +328,7 @@ public class Events extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        PlayerCache cache = flareBot.getPlayerCache(event.getAuthor().getId());
+        PlayerCache cache = FlareBot.instance().getPlayerCache(event.getAuthor().getId());
         cache.setLastMessage(LocalDateTime.from(event.getMessage().getCreationTime()));
         cache.setLastSeen(LocalDateTime.now());
         cache.setLastSpokeGuild(event.getGuild().getId());
@@ -403,7 +394,7 @@ public class Events extends ListenerAdapter {
     @Override
     public void onUserUpdateOnlineStatus(UserUpdateOnlineStatusEvent event) {
         if (event.getOldOnlineStatus() == OnlineStatus.OFFLINE)
-            flareBot.getPlayerCache(event.getUser().getId()).setLastSeen(LocalDateTime.now());
+            FlareBot.instance().getPlayerCache(event.getUser().getId()).setLastSeen(LocalDateTime.now());
     }
 
     @Override
@@ -442,7 +433,7 @@ public class Events extends ListenerAdapter {
 
     private void handleCommand(GuildMessageReceivedEvent event, Command cmd, String[] args) {
         Metrics.commandsReceived.labels(cmd.getClass().getSimpleName()).inc();
-        GuildWrapper guild = flareBot.getManager().getGuild(event.getGuild().getId());
+        GuildWrapper guild = FlareBot.instance().getManager().getGuild(event.getGuild().getId());
 
         if (cmd.getType().isInternal()) {
             if (GeneralUtils.canRunInternalCommand(cmd.getType(), event.getAuthor())) {
@@ -473,7 +464,7 @@ public class Events extends ListenerAdapter {
         if (handleMissingPermission(cmd, event)) return;
 
         if (!guild.hasBetaAccess() && cmd.isBetaTesterCommand()) {
-            if (flareBot.isTestBot())
+            if (FlareBot.instance().isTestBot())
                 LOGGER.error("Guild " + event.getGuild().getId() + " tried to use the beta command '"
                         + cmd.getCommand() + "'!");
             return;
@@ -484,8 +475,8 @@ public class Events extends ListenerAdapter {
             return;
         }
 
-        if (flareBot.getManager().isCommandDisabled(cmd.getCommand())) {
-            MessageUtils.sendErrorMessage(flareBot.getManager().getDisabledCommandReason(cmd.getCommand()), event.getChannel(), event.getAuthor());
+        if (FlareBot.instance().getManager().isCommandDisabled(cmd.getCommand())) {
+            MessageUtils.sendErrorMessage(FlareBot.instance().getManager().getDisabledCommandReason(cmd.getCommand()), event.getChannel(), event.getAuthor());
             return;
         }
 
@@ -636,13 +627,5 @@ public class Events extends ListenerAdapter {
 
     public List<Long> getRemovedByMeList() {
         return removedByMe;
-    }
-
-    public Map<Long, Double> getMaxButtonClicksPerSec() {
-        return maxButtonClicksPerSec;
-    }
-
-    public Map<Long, List<Double>> getButtonClicksPerSec() {
-        return buttonClicksPerSec;
     }
 }
