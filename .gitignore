@@ -19,8 +19,5 @@ out/
 #/FlareBot/
 
 # Gradle can use hashes
-.gradle/
-gradle/
-gradlew
-gradlew.bat
-settings.gradle
+.gradle
+**/build/
