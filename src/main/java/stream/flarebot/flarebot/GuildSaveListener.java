@@ -9,14 +9,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 
-public class GuildSaveListener implements RemovalListener<String, GuildWrapper> {
+public class GuildSaveListener implements RemovalListener<Long, GuildWrapper> {
 
     @Override
-    public void onRemoval(@Nullable String key, @Nullable GuildWrapper value, @Nonnull RemovalCause cause) {
+    public void onRemoval(@Nullable Long key, @Nullable GuildWrapper value, @Nonnull RemovalCause cause) {
         DatabaseManager.run(conn -> {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO guilds (guild_id, guild_data) VALUES (?, ?) " +
                     "ON CONFLICT (guild_id) DO UPDATE SET guild_data = VALUES(guild_data)");
-            ps.setString(1, key);
+            ps.setLong(1, key);
             ps.setString(2, DataHandler.gson.toJson(value));
             ps.executeUpdate();
         });

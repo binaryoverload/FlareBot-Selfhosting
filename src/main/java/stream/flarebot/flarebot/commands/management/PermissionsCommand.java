@@ -5,7 +5,6 @@ import net.dv8tion.jda.core.entities.*;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.objects.GuildWrapper;
-import stream.flarebot.flarebot.objects.GuildWrapperLoader;
 import stream.flarebot.flarebot.permissions.Group;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
 import stream.flarebot.flarebot.permissions.Permission;
@@ -18,7 +17,6 @@ import stream.flarebot.flarebot.util.pagination.PaginationUtil;
 
 import java.awt.Color;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PermissionsCommand implements Command {

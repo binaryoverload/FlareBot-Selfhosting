@@ -22,39 +22,6 @@ public class PlaylistsCommand implements Command {
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
         if (args.length >= 1) {
-            if (args[0].equalsIgnoreCase("mark")) {
-                if (getPermissions(channel).isCreator(sender)) {
-                    if (args.length == 1 || args.length == 2) {
-                        MessageUtils.sendUsage(this, channel, sender, args);
-                    } else {
-                        String playlist = MessageUtils.getMessage(args, 2);
-                        CassandraController.runTask(session -> {
-                            ResultSet set =
-                                    session.execute(session.prepare("SELECT playlist_name FROM flarebot.playlist WHERE " +
-                                            "guild_id = ? AND playlist_name = ?").bind()
-                                            .setString(0, channel.getGuild().getId()).setString(1, playlist));
-                            if (set.one() != null) {
-                                if (args[1].equalsIgnoreCase("global") || args[1].equalsIgnoreCase("local")) {
-                                    session.execute(session.prepare("UPDATE flarebot.playlist SET " +
-                                            "scope = ? WHERE guild_id = ? AND playlist_name = ?").bind()
-                                            .setString(0, args[1].toLowerCase()).setString(1, channel.getGuild().getId())
-                                            .setString(2, playlist));
-                                    channel.sendMessage(MessageUtils.getEmbed()
-                                            .setDescription("Changed the scope of '" + playlist + "' to "
-                                                    + args[1].toLowerCase()).build())
-                                            .queue();
-                                } else {
-                                    MessageUtils.sendErrorMessage("Invalid scope! Scopes are local and global!",
-                                            channel);
-                                }
-                            } else {
-                                MessageUtils.sendErrorMessage("That playlist could not be found!", channel);
-                            }
-                        });
-                    }
-                }
-            }
-        } else {
 
             channel.sendTyping().complete();
             CassandraController.runTask(session -> {

@@ -124,7 +124,6 @@ public class FlareBot {
     private FlareBotManager manager;
     private Map<String, PlayerCache> playerCache = new ConcurrentHashMap<>();
     private Events events;
-    private ShardManager shardManager;
 
     private long startTime;
     private Runtime runtime = Runtime.getRuntime();
@@ -472,10 +471,6 @@ public class FlareBot {
         return (hours < 10 ? "0" + hours : hours) + "h " + (minutes < 10 ? "0" + minutes : minutes) + "m " + (seconds < 10 ? "0" + seconds : seconds) + "s";
     }
 
-    public PlayerManager getMusicManager() {
-        return this.musicManager;
-    }
-
     public void setStatus(String status) {
         //TODO: Check if we're actually streaming or not.
         if (shardManager.getShardsTotal() == 1) {
@@ -499,38 +494,7 @@ public class FlareBot {
         return this.playerCache.get(userId);
     }
 
-    public boolean isTestBot() {
-        return testBot;
-    }
 
-    public String getPasteKey() {
-        return config.getString("bot.pasteAccessKey").isPresent() ? config.getString("bot.pasteAccessKey").get() : null;
-    }
-
-    public String getApiKey() {
-        if (config.getString("misc.apiKey").isPresent())
-            return config.getString("misc.apiKey").get();
-        else {
-            apiEnabled = false;
-            return null;
-        }
-    }
-
-    public ShardManager getShardManager() {
-        return shardManager;
-    }
-
-    public boolean isApiDisabled() {
-        return !apiEnabled;
-    }
-
-    private WebhookClient getImportantWebhook() {
-        if (!config.getString("bot.importantHook").isPresent())
-            return null;
-        if (importantHook == null)
-            importantHook = new WebhookClientBuilder(config.getString("bot.importantHook").get()).build();
-        return importantHook;
-    }
 
     public void runTasks() {
         new FlareBotTask("FixThatStatus") {

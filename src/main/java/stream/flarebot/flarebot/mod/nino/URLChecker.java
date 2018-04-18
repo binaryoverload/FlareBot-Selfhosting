@@ -197,7 +197,7 @@ public class URLChecker {
                 "http://bit.ly/2FY9rJW"
         );
 
-        GuildWrapper wrapper = new GuildWrapper("1");
+        GuildWrapper wrapper = new GuildWrapper(1L);
         wrapper.getNINO().addURLFlags(URLCheckFlag.IP_GRABBER, /*URLCheckFlag.BLACKLISTED,*/ URLCheckFlag.DISCORD_INVITE,
                 URLCheckFlag.PHISHING, URLCheckFlag.SUSPICIOUS);
 

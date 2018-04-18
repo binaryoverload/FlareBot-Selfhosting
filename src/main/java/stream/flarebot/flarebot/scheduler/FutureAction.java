@@ -1,10 +1,8 @@
 package stream.flarebot.flarebot.scheduler;
 
-import com.datastax.driver.core.PreparedStatement;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.FlareBotManager;
 import stream.flarebot.flarebot.Getters;
@@ -17,15 +15,9 @@ import stream.flarebot.flarebot.util.general.FormatUtils;
 import stream.flarebot.flarebot.util.general.GuildUtils;
 
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 
 public class FutureAction {
-
-    /*
-     * Ok so this will work with a few things, due to this it will have quite a few weird fields.
-     *
-     * CREATE TABLE future_tasks (guild_id bigint, channel_id bigint, responsible bigint, content text,
-     *                            expires_at timestamp, created_at timestamp, action varchar)
-     */
 
     /**
      * Guild ID it was executed in
@@ -192,23 +184,31 @@ public class FutureAction {
         Scheduler.delayTask(this::execute, "FutureTask-" + action.name() + "-" + expires.toString(),
                 getExpires().minus(System.currentTimeMillis()).getMillis());
         DatabaseManager.run(connection -> {
-            PreparedStatement update = connection.prepareStatement("UPDATE flarebot.future_tasks SET responsible = ?, " +
+            PreparedStatement update = connection.prepareStatement("UPDATE future_tasks SET responsible = ?, " +
                     "target = ?, content = ?, expires_at = ?, action = ? WHERE guild_id = ? AND channel_id = ? " +
                     "AND created_at = ?");
-            update.setLong(0, responsible).setLong(1, target).setString(2, content)
-                    .setTimestamp(3, expires.toDate()).setString(4, action.name()).setLong(5, guildId).setLong(6, channelId)
-                    .setTimestamp(7, created.toDate()));
+            update.setLong(1, responsible);
+            update.setLong(2, target);
+            update.setString(3, content);
+            update.setTimestamp(4, (Timestamp) expires.toDate());
+            update.setString(5, action.name());
+            update.setLong(6, guildId);
+            update.setLong(7, channelId);
+            update.setTimestamp(8, (Timestamp) created.toDate());
         });
         FlareBot.instance().getFutureActions().add(this);
     }
 
     public void delete() {
         FlareBot.instance().getFutureActions().remove(this);
-        if (delete == null)
-            delete = CassandraController.prepare("DELETE FROM flarebot.future_tasks WHERE guild_id = ? " +
+        DatabaseManager.run(connection -> {
+            PreparedStatement delete = connection.prepareStatement("DELETE FROM future_tasks WHERE guild_id = ? " +
                     "AND channel_id = ? AND created_at = ?");
-        CassandraController.executeAsync(delete.bind().setLong(0, guildId).setLong(1, channelId)
-                .setTimestamp(2, created.toDate()));
+            delete.setLong(1, guildId);
+            delete.setLong(2, channelId);
+            delete.setTimestamp(3, (Timestamp) created.toDate());
+            delete.execute();
+        });
         Scheduler.cancelTask("FutureTask-" + action.name() + "-" + expires.toString());
     }
 

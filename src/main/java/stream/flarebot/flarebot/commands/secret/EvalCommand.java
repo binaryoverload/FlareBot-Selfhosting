@@ -1,32 +1,24 @@
 package stream.flarebot.flarebot.commands.secret;
 
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
-import org.apache.commons.codec.binary.StringUtils;
-import stream.flarebot.flarebot.commands.CommandType;
-import stream.flarebot.flarebot.commands.InternalCommand;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageUtils;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 public class EvalCommand implements InternalCommand {
-
-    private static PreparedStatement insertSnippet;
 
     private ScriptEngineManager manager = new ScriptEngineManager();
     private static final ThreadGroup EVAL_POOL = new ThreadGroup("EvalCommand Thread Pool");
@@ -85,54 +77,6 @@ public class EvalCommand implements InternalCommand {
         final String[] code = {getCode(args)};
 
         boolean silent = hasOption(Options.SILENT, msg);
-        if (hasOption(Options.SNIPPET, msg)) {
-            String snippetName = MessageUtils.getNextArgument(msg, Options.SNIPPET.getAsArgument());
-            if (snippetName == null) {
-                MessageUtils.sendErrorMessage("Please specify the snippet you wish to run! Do `-snippet (name)`", channel);
-                return;
-            }
-
-            CassandraController.runTask(session -> {
-                ResultSet set = session.execute("SELECT encoded_code FROM flarebot.eval_snippets WHERE snippet_name = '"
-                        + snippetName + "'");
-                Row row = set.one();
-                if (row != null) {
-                    code[0] =
-                            StringUtils.newStringUtf8(Base64.getDecoder().decode(row.getString("encoded_code").getBytes()));
-                } else {
-                    MessageUtils.sendErrorMessage("That eval snippet does not exist!", channel);
-                    code[0] = null;
-                }
-            });
-        }
-
-        if (hasOption(Options.SAVE, msg)) {
-            String base64 = Base64.getEncoder().encodeToString(code[0].getBytes());
-            CassandraController.runTask(session -> {
-                String snippetName = MessageUtils.getNextArgument(msg, Options.SAVE.getAsArgument());
-                if (snippetName == null) {
-                    MessageUtils.sendErrorMessage("Please specify the name of the snippet to save! Do `-save (name)`", channel);
-                    return;
-                }
-                if (insertSnippet == null)
-                    insertSnippet =
-                            session.prepare("UPDATE flarebot.eval_snippets SET encoded_code = ? WHERE snippet_name = ?");
-
-                session.execute(insertSnippet.bind().setString(0, base64).setString(1, snippetName));
-                MessageUtils.sendSuccessMessage("Saved the snippet `" + snippetName + "`!", channel);
-            });
-            return;
-        }
-
-        if (hasOption(Options.LIST, msg)) {
-            ResultSet set = CassandraController.execute("SELECT snippet_name FROM flarebot.eval_snippets");
-            if (set == null) return;
-            MessageUtils.sendInfoMessage("**Available eval snippets**\n" +
-                            set.all().stream().map(row -> "`" + row.getString("snippet_name") + "`")
-                                    .collect(Collectors.joining(", "))
-                    , channel);
-            return;
-        }
 
         if (code[0] == null)
             return;
@@ -180,10 +124,7 @@ public class EvalCommand implements InternalCommand {
     }
 
     enum Options {
-        SILENT("s"),
-        SNIPPET("snippet"),
-        SAVE("save"),
-        LIST("list");
+        SILENT("s");
 
         private String key;
 

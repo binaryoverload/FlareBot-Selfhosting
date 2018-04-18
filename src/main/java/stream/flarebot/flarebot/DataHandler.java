@@ -26,7 +26,7 @@ public class DataHandler {
 
     public static final Gson gson = new GsonBuilder().create();
 
-    private static final Cache<String, GuildWrapper> guilds = Caffeine.newBuilder()
+    private static final Cache<Long, GuildWrapper> guilds = Caffeine.newBuilder()
             .expireAfterAccess(15, TimeUnit.MINUTES)
             .recordStats()
             .removalListener(new GuildSaveListener())
@@ -34,9 +34,9 @@ public class DataHandler {
 
     public void init() {
         DatabaseManager.run(conn -> {
-            conn.prepareCall("CREATE TABLE IF NOT EXISTS flarebot.guilds (guild_id BIGINT, guild_data JSON)").execute();
-            conn.prepareCall("CREATE TABLE IF NOT EXISTS flarebot.playlists (playlist_name TEXT, guild_id BIGINT, owner BIGINT, songs TEXT, PRIMARY KEY (playlist_name, guild_id))").execute();
-            conn.prepareCall("CREATE TABLE IF NOT EXISTS flarebot.future_tasks (guild_id BIGINT, channel_id BIGINT, responsible BIGINT, content TEXT, expires_at TIMESTAMP, created_at TIMESTAMP, action TEXT)").execute();
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS guilds (guild_id BIGINT, guild_data JSON)").execute();
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS playlists (playlist_name TEXT, guild_id BIGINT, owner BIGINT, songs TEXT, PRIMARY KEY (playlist_name, guild_id))").execute();
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS future_tasks (guild_id BIGINT, channel_id BIGINT, responsible BIGINT, content TEXT, expires_at TIMESTAMP, created_at TIMESTAMP, action TEXT)").execute();
         });
     }
 
@@ -52,7 +52,7 @@ public class DataHandler {
             return data.get();
 
         DatabaseManager.run(conn -> {
-            PreparedStatement ps = conn.prepareStatement("SELECT guild_data FROM flarebot.guilds WHERE guild_id = ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT guild_data FROM guilds WHERE guild_id = ?");
             ps.setLong(1, guildId);
             ResultSet set = ps.executeQuery();
 
@@ -69,7 +69,7 @@ public class DataHandler {
 
     public void savePlaylist(Command command, TextChannel channel, String ownerId, boolean overwriteAllowed, String name, List<String> songs) {
         DatabaseManager.run(connection -> {
-            PreparedStatement savePlaylistStatement = connection.prepareStatement("SELECT * FROM flarebot.playlist " +
+            PreparedStatement savePlaylistStatement = connection.prepareStatement("SELECT * FROM playlists " +
                     "WHERE playlist_name = ? AND guild_id = ?");
 
             savePlaylistStatement.setString(1, name);
@@ -87,7 +87,7 @@ public class DataHandler {
                     return;
                 }
             }
-            PreparedStatement insertPlaylistStatement = connection.prepareStatement("INSERT INTO flarebot.playlist" +
+            PreparedStatement insertPlaylistStatement = connection.prepareStatement("INSERT INTO playlists" +
                         " (playlist_name, guild_id, owner, songs) VALUES (?, ?, ?, ?)");
 
             insertPlaylistStatement.setString(1, name);
@@ -102,7 +102,7 @@ public class DataHandler {
     public ArrayList<String> loadPlaylist(TextChannel channel, User sender, String name) {
         AtomicReference<ArrayList<String>> list = new AtomicReference<>(new ArrayList<>());
         DatabaseManager.run(connection -> {
-            PreparedStatement savePlaylistStatement = connection.prepareStatement("SELECT * FROM flarebot.playlist " +
+            PreparedStatement savePlaylistStatement = connection.prepareStatement("SELECT * FROM playlists " +
                     "WHERE playlist_name = ? AND guild_id = ?");
 
             savePlaylistStatement.setString(1, name);

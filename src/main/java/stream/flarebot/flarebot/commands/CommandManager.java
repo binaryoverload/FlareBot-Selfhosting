@@ -7,6 +7,7 @@ import stream.flarebot.flarebot.util.ReflectionUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
@@ -58,8 +59,8 @@ public class CommandManager {
         return commands;
     }
 
-    public List<Command> getCommandsByType(CommandType type) {
-        return commands.stream().filter(command -> command.getType() == type).collect(Collectors.toList());
+    public Set<Command> getCommandsByType(CommandType type) {
+        return commands.stream().filter(command -> command.getType() == type).collect(Collectors.toSet());
     }
 
     public static CommandManager getInstance() {

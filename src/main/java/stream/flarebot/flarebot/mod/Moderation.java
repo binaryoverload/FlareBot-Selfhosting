@@ -1,12 +1,14 @@
 package stream.flarebot.flarebot.mod;
 
-import io.netty.util.internal.ConcurrentSet;
+import com.google.common.collect.Sets;
 import net.dv8tion.jda.core.entities.Member;
 import stream.flarebot.flarebot.mod.modlog.ModlogAction;
 import stream.flarebot.flarebot.mod.modlog.ModlogEvent;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 
+import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Moderation {
 
@@ -34,7 +36,7 @@ public class Moderation {
      */
     public Set<ModlogAction> getEnabledActions() {
         if (enabledActions == null)
-            enabledActions = new ConcurrentSet<>();
+            enabledActions = Sets.newConcurrentHashSet();;
         return enabledActions;
     }
 
@@ -84,7 +86,7 @@ public class Moderation {
     }
 
     public void disableAllEvents() {
-        this.enabledActions = new ConcurrentSet<>();
+        this.enabledActions = Sets.newConcurrentHashSet();
     }
 
     public void disableDefaultEvents() {

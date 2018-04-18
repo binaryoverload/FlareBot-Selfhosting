@@ -9,6 +9,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.WebUtils;
@@ -22,7 +23,7 @@ public class YouTubeSearchExtractor extends YouTubeExtractor {
     public void process(String input, Player player, Message message, User user) throws Exception {
         Response response = WebUtils.get(new Request.Builder().get().url(String.format("https://www.googleapis.com/youtube/v3/search" +
                         "?q=%s&part=snippet&key=%s&type=video,playlist",
-                URLEncoder.encode(input, "UTF-8"), FlareBot.getYoutubeKey())));
+                URLEncoder.encode(input, "UTF-8"), Config.INS.getYoutubeApi())));
 
         if (response.code() == 403) {
             // \uD83E\uDD15 = :head_bandage:

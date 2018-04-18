@@ -400,7 +400,7 @@ public class Events extends ListenerAdapter {
     @Override
     public void onStatusChange(StatusChangeEvent event) {
         if (FlareBot.EXITING.get()) return;
-        String statusHook = FlareBot.getStatusHook();
+        String statusHook = Config.INS.getImportantLogWebhook();
         if (statusHook == null) return;
         Request.Builder request = new Request.Builder().url(statusHook);
         RequestBody body = RequestBody.create(WebUtils.APPLICATION_JSON, new JSONObject()

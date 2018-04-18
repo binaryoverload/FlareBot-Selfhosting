@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.Config;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -20,7 +21,12 @@ public class DatabaseManager {
     public static void init() {
         config = new HikariConfig();
 
-        config.setDataSource(new PGSimpleDataSource());
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setServerName(Config.INS.getDatabaseHost());
+        dataSource.setPortNumber(Config.INS.getDatabasePort());
+        dataSource.setDatabaseName(Config.INS.getDatabaseName());
+
+        config.setDataSource(dataSource);
         config.setUsername(Config.INS.getDatabaseUsername());
         config.setPassword(Config.INS.getDatabasePassword());
         config.addDataSourceProperty("cachePrepStmts", "true");

@@ -1,5 +1,7 @@
 package stream.flarebot.flarebot;
 
+import net.dv8tion.jda.webhook.WebhookClient;
+import net.dv8tion.jda.webhook.WebhookClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Config {
 
@@ -56,6 +54,13 @@ public class Config {
     private String databaseUsername;
     @Nonnull
     private String databasePassword;
+    @Nonnull
+    private String databaseName;
+    @Nonnull
+    private String databaseHost;
+    @Nonnull
+    private int databasePort;
+
     @Nullable
     private String redisHost;
     private int redisPort;
@@ -64,8 +69,13 @@ public class Config {
     private int hikariPoolSize;
 
     // Hooks and test bot
-    private String errorLogWebhook;
-    private String importantLogWebhook;
+    private String errorLogChannel;
+    private WebhookClient errorLogHook;
+    private String importantLogChannel;
+    private WebhookClient importantLogHook;
+    private String statusLogChannel;
+    private WebhookClient statusLogHook;
+
     private String testBotChannel;
 
     // Err, not sure what to really name this.
@@ -113,6 +123,15 @@ public class Config {
                     log.error("You need to supply postgresql username and password!");
                     System.exit(1);
                 }
+
+                databaseHost = details.getOrDefault("host", "localhost");
+                try {
+                    databasePort = Integer.parseInt(details.getOrDefault("port", "5432"));
+                } catch (NumberFormatException e) {
+                    databasePort = 5432;
+                }
+                databaseName = details.getOrDefault("name", "flarebot");
+
             } else {
                 log.error("You need to supply postgresql database details!");
                 System.exit(1);
@@ -129,8 +148,9 @@ public class Config {
             log.info("Hikari max pool size set to " + hikariPoolSize);
 
 
-            errorLogWebhook = (String) config.getOrDefault("errorLogWebhook", "");
-            importantLogWebhook = (String) config.getOrDefault("importantLogWebhook", "");
+            errorLogChannel = (String) config.getOrDefault("errorLogChannel", "");
+            importantLogChannel = (String) config.getOrDefault("importantLogChannel", "");
+            statusLogChannel = (String) config.getOrDefault("statusLogChannel", "");
 
             testBotChannel = (String) config.getOrDefault("testBotChannel", "");
 
@@ -201,6 +221,20 @@ public class Config {
         return databasePassword;
     }
 
+    @Nonnull
+    public String getDatabaseHost() {
+        return databaseHost;
+    }
+
+    @Nonnull
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public int getDatabasePort() {
+        return databasePort;
+    }
+
     @Nullable
     public String getRedisHost() {
         return redisHost;
@@ -220,11 +254,35 @@ public class Config {
     }
 
     public String getErrorLogWebhook() {
-        return errorLogWebhook;
+        return errorLogChannel;
     }
 
-    public String getImportantLogWebhook() {
-        return importantLogWebhook;
+    public String getImportantLogChannel() {
+        return importantLogChannel;
+    }
+
+    private WebhookClient getImportantWebhook() {
+        if (importantLogChannel.equals(""))
+            return null;
+        if (importantLogHook == null)
+            importantLogHook = new WebhookClientBuilder(importantLogChannel).build();
+        return importantLogHook;
+    }
+
+    private WebhookClient getErrorWebhook() {
+        if (errorLogChannel.equals(""))
+            return null;
+        if (errorLogHook == null)
+            errorLogHook = new WebhookClientBuilder(errorLogChannel).build();
+        return errorLogHook;
+    }
+
+    private WebhookClient getStatusWebhook() {
+        if (statusLogChannel.equals(""))
+            return null;
+        if (statusLogHook == null)
+            statusLogHook = new WebhookClientBuilder(statusLogChannel).build();
+        return statusLogHook;
     }
 
     public String getTestBotChannel() {

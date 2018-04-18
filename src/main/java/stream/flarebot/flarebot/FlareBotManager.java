@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import stream.flarebot.flarebot.annotations.DoNotUse;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.objects.GuildWrapper;
-import stream.flarebot.flarebot.objects.GuildWrapperLoader;
 import stream.flarebot.flarebot.util.ConfirmUtil;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.objects.RunnableWrapper;
