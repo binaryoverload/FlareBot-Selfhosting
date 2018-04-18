@@ -22,7 +22,7 @@ public class GuildWrapper {
     public static transient final long DATA_VERSION = 1;
     public final long dataVersion = DATA_VERSION;
 
-    private String guildId;
+    private Long guildId;
     private char prefix = Constants.COMMAND_CHAR;
     private Welcome welcome = new Welcome();
     private PerGuildPermissions permissions = new PerGuildPermissions();
@@ -51,7 +51,7 @@ public class GuildWrapper {
      *
      * @param guildId Guild Id of the desired new GuildWrapper
      */
-    public GuildWrapper(String guildId) {
+    public GuildWrapper(Long guildId) {
         this.guildId = guildId;
     }
 
@@ -60,11 +60,11 @@ public class GuildWrapper {
     }
 
     public String getGuildId() {
-        return this.guildId;
+        return Long.toString(this.guildId);
     }
 
     public long getGuildIdLong() {
-        return Long.parseLong(this.guildId);
+        return this.guildId;
     }
 
     public Welcome getWelcome() {

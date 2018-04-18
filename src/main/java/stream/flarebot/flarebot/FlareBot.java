@@ -131,8 +131,6 @@ public class FlareBot {
     private WebhookClient importantHook;
     private CommandManager commandManager;
 
-    private final Set<FutureAction> futureActions = new ConcurrentHashSet<>();
-
     public static void main(String[] args) {
         (instance = new FlareBot()).init();
     }
@@ -267,10 +265,6 @@ public class FlareBot {
 
         startTime = System.currentTimeMillis();
         LOGGER.info("FlareBot v" + getVersion() + " booted!");
-
-        GeneralUtils.methodErrorHandler(LOGGER, null,
-                "Sent commands to site!", "Failed to send commands to site!",
-                this::sendCommands);
 
         GeneralUtils.methodErrorHandler(LOGGER, "Starting tasks!",
                 "Started all tasks, run complete!", "Failed to start all tasks!",

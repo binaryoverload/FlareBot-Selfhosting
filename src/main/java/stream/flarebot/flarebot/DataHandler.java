@@ -34,20 +34,26 @@ public class DataHandler {
 
     public void init() {
         DatabaseManager.run(conn -> {
-            conn.prepareCall("CREATE TABLE IF NOT EXISTS guilds (guild_id VARCHAR, guild_data JSON)").execute();
-            conn.prepareCall("CREATE TABLE IF NOT EXISTS playlists (playlist_name VARCHAR, guild_id VARCHAR, owner VARCHAR, songs TEXT, PRIMARY KEY (playlist_name, guild_id))");
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS flarebot.guilds (guild_id BIGINT, guild_data JSON)").execute();
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS flarebot.playlists (playlist_name TEXT, guild_id BIGINT, owner BIGINT, songs TEXT, PRIMARY KEY (playlist_name, guild_id))").execute();
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS flarebot.future_tasks (guild_id BIGINT, channel_id BIGINT, responsible BIGINT, content TEXT, expires_at TIMESTAMP, created_at TIMESTAMP, action TEXT)").execute();
         });
     }
 
-    public static GuildWrapper getGuild(String guildId) {
+    public static void saveGuild(String guildId) {
+        guilds.invalidate(guildId);
+    }
+
+    public static GuildWrapper getGuild(Long guildId) {
+        String id = Long.toString(guildId);
         AtomicReference<GuildWrapper> data = new AtomicReference<>(guilds.getIfPresent(guildId));
 
         if (data.get() != null)
             return data.get();
 
         DatabaseManager.run(conn -> {
-            PreparedStatement ps = conn.prepareStatement("SELECT guild_data FROM guilds WHERE guild_id = ?");
-            ps.setString(1, guildId);
+            PreparedStatement ps = conn.prepareStatement("SELECT guild_data FROM flarebot.guilds WHERE guild_id = ?");
+            ps.setLong(1, guildId);
             ResultSet set = ps.executeQuery();
 
             if (set.isFirst()) {
@@ -81,7 +87,7 @@ public class DataHandler {
                     return;
                 }
             }
-            PreparedStatement insertPlaylistStatement = connection.prepareStatement("INSERT INTO playlist" +
+            PreparedStatement insertPlaylistStatement = connection.prepareStatement("INSERT INTO flarebot.playlist" +
                         " (playlist_name, guild_id, owner, songs) VALUES (?, ?, ?, ?)");
 
             insertPlaylistStatement.setString(1, name);
