@@ -494,8 +494,6 @@ public class FlareBot {
         return this.playerCache.get(userId);
     }
 
-
-
     public void runTasks() {
         new FlareBotTask("FixThatStatus") {
             @Override
