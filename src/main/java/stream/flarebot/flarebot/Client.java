@@ -52,12 +52,12 @@ public class Client {
                 .setBulkDeleteSplittingEnabled(false)
                 .setContextEnabled(true)
                 .setSessionController(new SessionControllerAdapter());
-
-        setupMusic();
     }
 
     protected void start() throws LoginException {
         shardManager = builder.build();
+
+        setupMusic();
 
         while (isNotReady()) {
             try {

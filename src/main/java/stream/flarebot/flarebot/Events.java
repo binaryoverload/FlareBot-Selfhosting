@@ -312,15 +312,6 @@ public class Events extends ListenerAdapter {
             if (!message.isEmpty()) {
                 RedisController.set(event.getMessageId(), GeneralUtils.getRedisMessageJson(event.getMessage()), "nx", "ex", 86400);
             }
-
-            // Random fun stuff
-            if (event.getGuild().getIdLong() == Config.INS.getOfficialGuild()) {
-                if (rip.matcher(message).find()) {
-                    event.getMessage().addReaction("\uD83C\uDDEB").queue(); // F
-                } else if (message.toLowerCase().startsWith("i cri")) {
-                    event.getMessage().addReaction("\uD83D\uDE22").queue(); // Cry
-                }
-            }
         }
     }
 
