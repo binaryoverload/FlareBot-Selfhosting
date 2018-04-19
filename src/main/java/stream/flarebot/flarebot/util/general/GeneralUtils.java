@@ -7,9 +7,14 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import io.github.binaryoverload.JSONConfig;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;
+import net.dv8tion.jda.core.requests.ErrorResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormatter;
@@ -17,36 +22,48 @@ import org.joda.time.format.PeriodFormatterBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
+import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.FlareBotManager;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.database.RedisMessage;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.objects.Report;
 import stream.flarebot.flarebot.objects.ReportMessage;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.Pair;
 import stream.flarebot.flarebot.util.errorhandling.Markers;
 import stream.flarebot.flarebot.util.implementations.MultiSelectionContent;
 
-import java.awt.Color;
-import java.io.*;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
+import java.awt.Color;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GeneralUtils {
 
@@ -62,6 +79,18 @@ public class GeneralUtils {
             .appendSeconds().appendSuffix("s")
             .toFormatter();
 
+    @Nonnull
+    public static Consumer<Throwable> getFailedRestActionHandler(String info, ErrorResponse... ignored) {
+        return t -> {
+            if (t instanceof ErrorResponseException) {
+                ErrorResponseException e = (ErrorResponseException) t;
+                // Increment metrics
+                if (Arrays.asList(ignored).contains(e.getErrorResponse()) || e.getErrorCode() == -1)
+                    return;
+            }
+            FlareBot.LOGGER.warn(info, t.getMessage());
+        };
+    }
 
     /**
      * Gets a user count for a guild not including bots
@@ -640,30 +669,4 @@ public class GeneralUtils {
         return result;
     }
 
-    public static boolean canRunInternalCommand(@Nonnull Command command, User user) {
-        return canRunInternalCommand(command.getType(), user);
-    }
-
-    /**
-     * If the user can run the command, this will check if the command is null and if it is internal.
-     * If internal it will check the official guild to see if the user has the right role.
-     * <b>This does not check permissions</b>
-     *
-     * @return If the command is not internal or if the role has the right role to run an internal command.
-     */
-    public static boolean canRunInternalCommand(@Nonnull CommandType type, User user) {
-        if (type.isInternal()) {
-            if (FlareBot.instance().isTestBot() && PerGuildPermissions.isContributor(user))
-                return true;
-            Guild g = Getters.getOfficialGuild();
-
-            if (g != null && g.getMember(user) != null) {
-                for (long roleId : type.getRoleIds())
-                    if (g.getMember(user).getRoles().contains(g.getRoleById(roleId)))
-                        return true;
-            } else
-                return false;
-        }
-        return false;
-    }
 }

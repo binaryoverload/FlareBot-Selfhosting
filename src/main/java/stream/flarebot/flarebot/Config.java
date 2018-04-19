@@ -15,13 +15,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Config {
 
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
-    public static String DEFAULT_PREFIX = "_";
+    public static char DEFAULT_PREFIX = '_';
 
     public static final Config INS;
 
@@ -76,7 +79,8 @@ public class Config {
     private String statusLogChannel;
     private WebhookClient statusLogHook;
 
-    private String testBotChannel;
+    private ArrayList<Long> admins;
+    private Long officialGuild;
 
     // Err, not sure what to really name this.
     private int numShards;
@@ -152,7 +156,27 @@ public class Config {
             importantLogChannel = (String) config.getOrDefault("importantLogChannel", "");
             statusLogChannel = (String) config.getOrDefault("statusLogChannel", "");
 
-            testBotChannel = (String) config.getOrDefault("testBotChannel", "");
+            Object admins = config.getOrDefault("admins", new ArrayList<Long>());
+            if (admins instanceof ArrayList && !((ArrayList) admins).isEmpty()) {
+                this.admins = new ArrayList<>();
+                this.admins.addAll(((ArrayList<String>) admins).stream().map(Long::parseLong).collect(Collectors.toSet()));
+            } else {
+                log.error("No admins were specified!");
+                System.exit(1);
+            }
+
+            String officialGuild = (String) config.getOrDefault("officialGuild", "");
+            if (officialGuild.isEmpty()) {
+                log.error("You need to provide an official server!");
+                System.exit(1);
+            } else {
+                try {
+                    this.officialGuild = Long.parseLong(officialGuild);
+                } catch (NumberFormatException e) {
+                    log.error("Official guild is not valid!");
+                    System.exit(1);
+                }
+            }
 
             numShards = (int) config.getOrDefault("numShards", -1);
         } catch (IOException e) {
@@ -171,29 +195,8 @@ public class Config {
         return file;
     }
 
-    public class LavalinkHost {
-
-        private String name;
-        private URI uri;
-        private String password;
-
-        public LavalinkHost(String name, URI uri, String pass) {
-            this.name = name;
-            this.uri = uri;
-            this.password = pass;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public URI getUri() {
-            return uri;
-        }
-
-        public String getPassword() {
-            return password;
-        }
+    public ArrayList<Long> getAdmins() {
+        return admins;
     }
 
     @Nonnull
@@ -261,39 +264,35 @@ public class Config {
         return importantLogChannel;
     }
 
-    private WebhookClient getImportantWebhook() {
-        if (importantLogChannel.equals(""))
+    public WebhookClient getImportantWebhook() {
+        if (importantLogChannel.isEmpty())
             return null;
         if (importantLogHook == null)
             importantLogHook = new WebhookClientBuilder(importantLogChannel).build();
         return importantLogHook;
     }
 
-    private WebhookClient getErrorWebhook() {
-        if (errorLogChannel.equals(""))
+    public WebhookClient getErrorWebhook() {
+        if (errorLogChannel.isEmpty())
             return null;
         if (errorLogHook == null)
             errorLogHook = new WebhookClientBuilder(errorLogChannel).build();
         return errorLogHook;
     }
 
-    private WebhookClient getStatusWebhook() {
-        if (statusLogChannel.equals(""))
+    public WebhookClient getStatusWebhook() {
+        if (statusLogChannel.isEmpty())
             return null;
         if (statusLogHook == null)
             statusLogHook = new WebhookClientBuilder(statusLogChannel).build();
         return statusLogHook;
     }
 
-    public String getTestBotChannel() {
-        return testBotChannel;
-    }
-
-    public boolean isTestBot() {
-        return !testBotChannel.equals("");
-    }
-
     public int getNumShards() {
         return numShards;
+    }
+
+    public long getOfficialGuild() {
+        return officialGuild;
     }
 }

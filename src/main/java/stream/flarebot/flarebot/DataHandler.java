@@ -6,9 +6,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import org.joda.time.DateTime;
 import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.objects.GuildWrapper;
+import stream.flarebot.flarebot.scheduler.FutureAction;
 import stream.flarebot.flarebot.util.ConfirmUtil;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.objects.RunnableWrapper;
@@ -38,6 +40,7 @@ public class DataHandler {
             conn.prepareCall("CREATE TABLE IF NOT EXISTS playlists (playlist_name TEXT, guild_id BIGINT, owner BIGINT, songs TEXT, PRIMARY KEY (playlist_name, guild_id))").execute();
             conn.prepareCall("CREATE TABLE IF NOT EXISTS future_tasks (guild_id BIGINT, channel_id BIGINT, responsible BIGINT, content TEXT, expires_at TIMESTAMP, created_at TIMESTAMP, action TEXT)").execute();
         });
+        loadFutureTasks();
     }
 
     public static void saveGuild(String guildId) {
@@ -117,6 +120,35 @@ public class DataHandler {
                         .setDescription("That playlist does not exist!").build()).queue();
         });
         return list.get();
+    }
+
+    private void loadFutureTasks() {
+        AtomicReference<Integer> loaded = new AtomicReference<>(0);
+        DatabaseManager.run(connection -> {
+            ResultSet set = connection.prepareCall("SELECT * FROM future_tasks").executeQuery();
+            while (set.next()) {
+                FutureAction fa =
+                        new FutureAction(set.getLong("guild_id"), set.getLong("channel_id"), set.getLong("responsible"),
+                                set.getLong("target"), set.getString("content"), new DateTime(set.getTimestamp("expires_at")),
+                                new DateTime(set.getTimestamp("created_at")),
+                                FutureAction.Action.valueOf(set.getString("action").toUpperCase()));
+
+                try {
+                    if (new DateTime().isAfter(fa.getExpires()))
+                        fa.execute();
+                    else {
+                        fa.queue();
+                        loaded.getAndUpdate(i -> i++);
+                    }
+                } catch (NullPointerException e) {
+                    FlareBot.LOGGER.error("Failed to execute/queue future task"
+                            + "\nAction: " + fa.getAction() + "\nResponsible: " + fa.getResponsible()
+                            + "\nTarget: " + fa.getTarget() + "\nContent: " + fa.getContent(), e);
+                }
+            }
+        });
+
+        FlareBot.LOGGER.info("Loaded " + loaded.get() + " future tasks");
     }
 
 

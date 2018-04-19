@@ -9,11 +9,11 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.apache.commons.lang3.StringUtils;
-import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.FlareBotManager;
+import stream.flarebot.flarebot.Client;
+import stream.flarebot.flarebot.Config;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.objects.GuildWrapper;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public class GuildUtils {
      * @return A char that is the guilds prefix
      */
     public static char getPrefix(Guild guild) {
-        return guild == null ? Constants.COMMAND_CHAR : FlareBotManager.instance().getGuild(guild.getId()).getPrefix();
+        return guild == null ? Config.DEFAULT_PREFIX : DataHandler.getGuild(guild.getIdLong()).getPrefix();
     }
 
     /**
@@ -43,7 +43,7 @@ public class GuildUtils {
      * @return A char that is the guilds prefix
      */
     public static char getPrefix(GuildWrapper guild) {
-        return guild == null ? Constants.COMMAND_CHAR : guild.getPrefix();
+        return guild == null ? Config.DEFAULT_PREFIX : guild.getPrefix();
     }
 
     /**
@@ -80,7 +80,7 @@ public class GuildUtils {
      * @param guildId The id of the {@link Guild} to get the role from
      * @return null if the role doesn't, otherwise a list of roles matching the string
      */
-    public static Role getRole(String s, String guildId) {
+    public static Role getRole(String s, Long guildId) {
         return getRole(s, guildId, null);
     }
 
@@ -92,7 +92,7 @@ public class GuildUtils {
      * @param channel The channel to send an error message to if anything goes wrong.
      * @return null if the role doesn't, otherwise a list of roles matching the string
      */
-    public static Role getRole(String s, String guildId, TextChannel channel) {
+    public static Role getRole(String s, Long guildId, TextChannel channel) {
         Guild guild = Getters.getGuildById(guildId);
         Role role = guild.getRoles().stream()
                 .filter(r -> r.getName().equalsIgnoreCase(s))
@@ -107,7 +107,7 @@ public class GuildUtils {
             if (guild.getRolesByName(s, true).isEmpty()) {
                 String closest = null;
                 int distance = LEVENSHTEIN_DISTANCE;
-                for (Role role1 : guild.getRoles().stream().filter(role1 -> FlareBotManager.instance().getGuild(guildId).getSelfAssignRoles()
+                for (Role role1 : guild.getRoles().stream().filter(role1 -> DataHandler.getGuild(guildId).getSelfAssignRoles()
                         .contains(role1.getId())).collect(Collectors.toList())) {
                     int currentDistance = StringUtils.getLevenshteinDistance(role1.getName(), s);
                     if (currentDistance < distance) {
@@ -298,7 +298,7 @@ public class GuildUtils {
                         "bypass it!", channel);
                 return;
             }
-            PlayerManager musicManager = FlareBot.instance().getMusicManager();
+            PlayerManager musicManager = Client.instance().getMusicManager();
             channel.getGuild().getAudioManager().openAudioConnection(member.getVoiceState().getChannel());
             musicManager.getPlayer(channel.getGuild().getId()).play();
 

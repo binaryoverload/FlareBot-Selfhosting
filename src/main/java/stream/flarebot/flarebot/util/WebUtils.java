@@ -54,20 +54,7 @@ public class WebUtils {
      *                     remote server accepted the request before the failure.
      */
     public static Response post(String url, MediaType type, String body) throws IOException {
-        return post(url, type, body, false);
-    }
-
-    public static Response post(String url, MediaType type, String body, boolean sendAPIAuth) throws IOException {
-        return post(url, type, body, sendAPIAuth, false);
-    }
-
-    public static Response post(String url, MediaType type, String body, boolean sendAPIAuth,
-                                boolean compress) throws IOException {
         Request.Builder request = new Request.Builder().url(url);
-        if (sendAPIAuth)
-            request.addHeader("Authorization", FlareBot.instance().getApiKey());
-        if (compress)
-            request.addHeader("Content-Encoding", "gzip");
         RequestBody requestBody = RequestBody.create(type, body);
         request = request.post(requestBody);
         return request(request);

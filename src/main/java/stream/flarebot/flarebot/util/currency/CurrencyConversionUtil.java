@@ -6,8 +6,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import okhttp3.Request;
 import okhttp3.Response;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.util.Constants;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.util.WebUtils;
 
 import java.io.IOException;
@@ -72,7 +71,6 @@ public class CurrencyConversionUtil {
             if (from.equalsIgnoreCase(to)) {
                 if ((random.nextInt(100) + 1) == 100) {
                     channel.sendMessage("I had hoped you didn't need me for that...").queue();
-                    Constants.logEG("Convert a currency to itself...", cmd, channel.getGuild(), sender);
                 }
                 return new CurrencyComparison(from, to, (double) 1);
             }

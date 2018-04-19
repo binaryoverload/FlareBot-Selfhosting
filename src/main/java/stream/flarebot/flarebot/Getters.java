@@ -11,7 +11,6 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;
 import net.dv8tion.jda.core.utils.cache.SnowflakeCacheView;
-import stream.flarebot.flarebot.util.Constants;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,8 +20,8 @@ import java.util.stream.Collectors;
 
 public class Getters {
 
-    private static FlareBot flareBot() {
-        return FlareBot.instance();
+    private static Client client() {
+        return Client.instance();
     }
 
     // getXCache
@@ -92,7 +91,7 @@ public class Getters {
     @Nullable
     public static User retrieveUserById(long id) {
         try {
-            return flareBot().getClient().retrieveUserById(id).complete();
+            return client().getJDA().retrieveUserById(id).complete();
         } catch (ErrorResponseException e) {
             return null;
         }
@@ -113,33 +112,33 @@ public class Getters {
     public static long getActiveVoiceChannels() {
         return getShardManager().getGuildCache().stream()
                 .filter(c -> c.getAudioManager().getConnectedChannel() != null)
-                .map(g -> flareBot().getMusicManager().getPlayer(g.getId()))
+                .map(g -> client().getMusicManager().getPlayer(g.getId()))
                 .filter(p -> p != null && p.getPlayingTrack() != null && !p.getPaused())
                 .count();
     }
 
     public static int getSongsQueued() {
-        return flareBot().getMusicManager().getPlayers().stream()
+        return client().getMusicManager().getPlayers().stream()
                 .mapToInt(p -> p.getPlaylist().size())
                 .sum();
     }
 
     // Other
     public static List<JDA> getShards() {
-        return flareBot().getShardManager().getShards();
+        return client().getShardManager().getShards();
     }
 
     @Nonnull
     public static SelfUser getSelfUser() {
-        return flareBot().getClient().getSelfUser();
+        return client().getJDA().getSelfUser();
     }
 
     @Nonnull
     public static ShardManager getShardManager() {
-        return flareBot().getShardManager();
+        return client().getShardManager();
     }
 
     public static Guild getOfficialGuild() {
-        return getGuildById(Constants.OFFICIAL_GUILD);
+        return getGuildById(Config.INS.getOfficialGuild());
     }
 }

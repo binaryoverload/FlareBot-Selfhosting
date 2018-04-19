@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.util;
 
 import net.dv8tion.jda.core.JDA;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
 
@@ -10,7 +11,7 @@ public class ShardUtils {
     private static final long POSSIBLE_DEAD_SHARD_TIMEOUT = 15_000L;
 
     private static int getShardCount() {
-        return flareBot.getShardManager().getShards().size();
+        return Client.instance().getShardManager().getShards().size();
     }
 
     /**
@@ -41,7 +42,7 @@ public class ShardUtils {
      * @param shardId The shard ID to get.
      */
     public static JDA getShardById(int shardId) {
-        return flareBot.getShardManager().getShardById(shardId);
+        return Client.instance().getShardManager().getShardById(shardId);
     }
 
     /**

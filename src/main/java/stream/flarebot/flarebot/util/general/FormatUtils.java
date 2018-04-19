@@ -7,10 +7,10 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
+import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.objects.GuildWrapper;
-import stream.flarebot.flarebot.util.Constants;
 
-import java.awt.*;
+import java.awt.Color;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -67,7 +67,7 @@ public class FormatUtils {
      * @return The String with the prefix in place of of {%}.
      */
     public static String formatCommandPrefix(Guild guild, String usage) {
-        if (guild == null) return Constants.COMMAND_CHAR_STRING;
+        if (guild == null) return String.valueOf(Config.DEFAULT_PREFIX);
         String prefix = String.valueOf(GuildUtils.getPrefix(guild));
         if (usage.contains("{%}"))
             return usage.replace("{%}", prefix);

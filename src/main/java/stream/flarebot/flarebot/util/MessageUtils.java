@@ -5,6 +5,7 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;
+import net.dv8tion.jda.webhook.WebhookClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -12,6 +13,7 @@ import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.commands.Command;
@@ -51,17 +53,6 @@ public class MessageUtils {
     public static final String ZERO_WIDTH_SPACE = "\u200B";
 
     private static JDA cachedJDA;
-    private static Emote flareHeart;
-
-    private static final long GLOBAL_MSG_DELAY = TimeUnit.HOURS.toMillis(1);
-    private static String globalMsg;
-    private static final List<String> globalMsgs = new CopyOnWriteArrayList<>();
-    /*private static final List<String> globalMsgs = new CopyOnWriteArrayList<>(Arrays.asList(
-            "Did you know we had a Twitter account? " +
-                    "Follow us [here](https://twitter.com/discordflarebot) for updates, teasers and ~~memes~~professional content!",
-            "Did you know I had a Patreon? It's a cool way to show support! Do `_donate` for more info!"
-    ));*/
-    private static Map<Long, Long> lastGlobalMsg = new ConcurrentHashMap<>();
 
     public static void sendPM(User user, String message) {
         try {
@@ -107,9 +98,9 @@ public class MessageUtils {
         sendErrorMessage(getEmbed().setDescription(s + "\n**Stack trace**: " + paste(trace)), channel);
     }
 
-    public static void sendFatalException(String s, Throwable e, TextChannel channel) {
+    public static void sendException(String s, Throwable e, WebhookClient client) {
         if (e == null) {
-            sendFatalErrorMessage(s, channel);
+            sendMessage(MessageType.ERROR, s, client);
             return;
         }
         StringWriter sw = new StringWriter();
@@ -117,21 +108,13 @@ public class MessageUtils {
         e.printStackTrace(pw);
         String trace = sw.toString();
         pw.close();
-        channel.sendMessage(new MessageBuilder().append(
-                Constants.getOfficialGuild().getRoleById(Constants.DEVELOPER_ID).getAsMention())
-                .setEmbed(getEmbed().setColor(Color.red).setDescription(s + "\n**Stack trace**: " + paste(trace))
-                        .build()).build()).queue();
+        sendMessage(MessageType.ERROR, s + "\n**Stack trace**: " + paste(trace), client);
     }
 
     public static String paste(String trace) {
-        if (flareBot.getPasteKey() == null || flareBot.getPasteKey().isEmpty()) {
-            FlareBot.LOGGER.warn("Paste server key is missing! Pastes will not work!");
-            return null;
-        }
         try {
-            Response response = WebUtils.request(new Request.Builder().url("https://paste.flarebot.stream/documents")
-                    .addHeader("Authorization", flareBot.getPasteKey()).post(RequestBody
-                            .create(WebUtils.APPLICATION_JSON, trace)));
+            Response response = WebUtils.request(new Request.Builder().url("https://hastebin.com/documents")
+                    .post(RequestBody.create(WebUtils.APPLICATION_JSON, trace)));
             if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
             ResponseBody body = response.body();
             if (body != null) {
@@ -154,7 +137,7 @@ public class MessageUtils {
 
     public static EmbedBuilder getEmbed() {
         if (cachedJDA == null || cachedJDA.getStatus() != JDA.Status.CONNECTED)
-            cachedJDA = flareBot.getClient();
+            cachedJDA = Client.instance().getJDA();
 
         EmbedBuilder defaultEmbed = new EmbedBuilder().setColor(ColorUtils.FLAREBOT_BLUE);
 
@@ -186,12 +169,6 @@ public class MessageUtils {
         return user.getDefaultAvatarUrl();
     }
 
-    public static void sendFatalErrorMessage(String s, TextChannel channel) {
-        channel.sendMessage(new MessageBuilder().append(
-                Constants.getOfficialGuild().getRoleById(Constants.DEVELOPER_ID).getAsMention())
-                .setEmbed(getEmbed().setColor(Color.red).setDescription(s).build()).build()).queue();
-    }
-
     public static void sendMessage(MessageType type, String message, TextChannel channel) {
         sendMessage(type, message, channel, null);
     }
@@ -206,8 +183,8 @@ public class MessageUtils {
 
     public static void sendMessage(MessageType type, String message, TextChannel channel, User sender, long autoDeleteDelay) {
         sendMessage(type, (sender != null ? getEmbed(sender) : getEmbed()).setColor(type.getColor())
-                .setTimestamp(OffsetDateTime.now(Clock.systemUTC()))
-                .setDescription(FormatUtils.formatCommandPrefix((channel != null ? channel.getGuild() : null), message))
+                        .setTimestamp(OffsetDateTime.now(Clock.systemUTC()))
+                        .setDescription(FormatUtils.formatCommandPrefix((channel != null ? channel.getGuild() : null), message))
                 , channel, autoDeleteDelay);
     }
 
@@ -220,28 +197,19 @@ public class MessageUtils {
     public static void sendMessage(MessageType type, EmbedBuilder builder, TextChannel channel, long autoDeleteDelay) {
         if (builder.build().getColor() == null)
             builder.setColor(type.getColor());
-        if (type == MessageType.ERROR) {
-            if (flareHeart == null)
-                flareHeart = Getters.getEmoteById(386550693294768129L);
-            builder.setDescription(builder.build().getDescription() + "\n\nIf you need more support join our " +
-                    "[Support Server](" + Constants.INVITE_URL + ")! Our staff can support on any issue you may have! "
-                    + (flareHeart == null ? "<3" : flareHeart.getAsMention()));
-        }
-
-        if (type != MessageType.WARNING && type != MessageType.ERROR && builder.getFields().isEmpty()) {
-            Optional<String> globalMsg = getGlobalMessage();
-            if ((!lastGlobalMsg.containsKey(channel.getIdLong())
-                    || System.currentTimeMillis() - lastGlobalMsg.get(channel.getIdLong()) >= GLOBAL_MSG_DELAY)
-                    && globalMsg.isPresent()) {
-                lastGlobalMsg.put(channel.getIdLong(), System.currentTimeMillis());
-
-                builder.setDescription(builder.build().getDescription() + "\n\n" + globalMsg.get());
-            }
-        }
         if (autoDeleteDelay > 0)
             sendAutoDeletedMessage(builder.build(), autoDeleteDelay, channel);
         else
             sendMessage(builder.build(), channel);
+    }
+
+
+    public static void sendMessage(MessageType type, String message, WebhookClient webhookClient) {
+        EmbedBuilder builder = getEmbed();
+        builder.setColor(type.getColor());
+        builder.setTimestamp(OffsetDateTime.now(Clock.systemUTC()));
+        builder.setDescription(message);
+        webhookClient.send(builder.build());
     }
 
     private static void sendMessage(MessageEmbed embed, TextChannel channel) {
@@ -486,25 +454,4 @@ public class MessageUtils {
         return null;
     }
 
-    @SuppressWarnings("unused")
-    private static void setStaticGlobalMessage(String s) {
-        globalMsg = s;
-        FlareBot.getConfig().set("globalMsg", s);
-    }
-
-    @SuppressWarnings("unused")
-    private static void addGlobalMessage(String s) {
-        globalMsg = s;
-    }
-
-    private static Optional<String> getGlobalMessage() {
-        if (globalMsg != null)
-            return globalMsg.isEmpty() ? Optional.empty() : Optional.of(globalMsg);
-        else if (FlareBot.getConfig().getString("globalMsg").isPresent())
-            return Optional.of(FlareBot.getConfig().getString("globalMsg").get());
-        else if (globalMsgs.size() > 0)
-            return Optional.of(RandomUtils.getRandomString(globalMsgs));
-        else
-            return Optional.empty();
-    }
 }

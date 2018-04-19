@@ -1,8 +1,12 @@
 package stream.flarebot.flarebot.commands;
 
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
-import stream.flarebot.flarebot.FlareBotManager;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
 
@@ -35,11 +39,11 @@ public interface Command {
     }
 
     default PerGuildPermissions getPermissions(TextChannel chan) {
-        return FlareBotManager.instance().getGuild(chan.getGuild().getId()).getPermissions();
+        return DataHandler.getGuild(chan.getGuild().getIdLong()).getPermissions();
     }
 
     default boolean isDefaultPermission() {
-        return getPermission() != null && getPermission().isDefaultPerm() && !getType().isInternal();
+        return getPermission() != null && getPermission().isDefaultPerm() && !getType().isAdmin();
     }
 
     default boolean deleteMessage() {
@@ -51,6 +55,6 @@ public interface Command {
     }
 
     default char getPrefix(Guild guild) {
-        return FlareBotManager.instance().getGuild(guild.getId()).getPrefix();
+        return DataHandler.getGuild(guild.getIdLong()).getPrefix();
     }
 }

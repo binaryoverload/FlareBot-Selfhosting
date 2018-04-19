@@ -49,11 +49,11 @@ public class GitHandler {
     public static Git getGit() {
         if (git == null) {
             try {
-                git = Git.open(FlareBot.instance().isTestBot() ? new File(".") : new File("FlareBot/"));
+                git = Git.open(Config.INS.isTestBot() ? new File(".") : new File("FlareBot/"));
             } catch (RepositoryNotFoundException e) {
                 try {
                     git = Git.cloneRepository()
-                            .setDirectory(FlareBot.instance().isTestBot() ? new File(".") : new File("FlareBot/"))
+                            .setDirectory(Config.INS.isTestBot() ? new File(".") : new File("FlareBot/"))
                             .setURI("https://github.com/FlareBot/FlareBot.git")
                             .call();
                 } catch (GitAPIException e1) {

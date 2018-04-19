@@ -82,7 +82,7 @@ public class ModlogEvents implements EventListener {
         if (g == null)
             return;
 
-        GuildWrapper guildWrapper = FlareBotManager.instance().getGuild(g.getId());
+        GuildWrapper guildWrapper = DataHandler.getGuild(g.getIdLong());
         if (guildWrapper == null)
             return;
 
@@ -140,7 +140,7 @@ public class ModlogEvents implements EventListener {
         event.getGuild().getAuditLogs().limit(1).type(ActionType.BAN).queue(auditLogEntries -> {
             AuditLogEntry entry = auditLogEntries.get(0);
             // We don't want dupes.
-            if (entry.getUser().getIdLong() == FlareBot.instance().getClient().getSelfUser().getIdLong()) return;
+            if (entry.getUser().getIdLong() == Client.instance().getSelfUser().getIdLong()) return;
             boolean validEntry = entry.getTargetId().equals(event.getUser().getId());
             ModlogHandler.getInstance().postToModlog(wrapper, ModlogEvent.USER_BANNED, event.getUser(),
                     validEntry ? entry.getUser() : null,
@@ -173,7 +173,7 @@ public class ModlogEvents implements EventListener {
 
             if (entry != null) {
                 // We don't want dupes.
-                if (entry.getUser().getIdLong() == FlareBot.instance().getClient().getSelfUser().getIdLong()) return;
+                if (entry.getUser().getIdLong() == Client.instance().getSelfUser().getIdLong()) return;
 
                 if (!entry.getTargetId().equals(event.getUser().getId())) return;
                 responsible = entry.getUser();
