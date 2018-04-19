@@ -5,20 +5,19 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
-import stream.flarebot.flarebot.FlareBotManager;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
+import stream.flarebot.flarebot.permissions.PerGuildPermissions;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.buttons.ButtonGroupConstants;
-import stream.flarebot.flarebot.util.general.GeneralUtils;
 import stream.flarebot.flarebot.util.pagination.PagedEmbedBuilder;
 import stream.flarebot.flarebot.util.pagination.PaginationList;
 import stream.flarebot.flarebot.util.pagination.PaginationUtil;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ public class HelpCommand implements Command {
                 channel.sendMessage(MessageUtils.getEmbed(sender).setDescription("No such category!").build()).queue();
                 return;
             }
-            if (type.isInternal() && !GeneralUtils.canRunInternalCommand(type, sender)) {
+            if (type.isAdmin() && !PerGuildPermissions.isAdmin(sender)) {
                 channel.sendMessage(MessageUtils.getEmbed(sender).setDescription("No such category!").build()).queue();
                 return;
             }
@@ -50,12 +49,12 @@ public class HelpCommand implements Command {
         for (CommandType c : CommandType.getTypes()) {
             List<String> help = c.getCommands()
                     .stream().filter(cmd -> cmd.getPermission() != null &&
-                            FlareBotManager.instance().getGuild(guild.getId())
+                            DataHandler.getGuild(guild.getIdLong())
                                     .getPermissions()
                                     .hasPermission(guild
                                             .getMember(sender), cmd
                                             .getPermission()))
-                    .map(command -> FlareBotManager.instance().getGuild(guild.getId()).getPrefix() + command.getCommand() + " - " + command
+                    .map(command -> DataHandler.getGuild(guild.getIdLong()).getPrefix() + command.getCommand() + " - " + command
                             .getDescription() + '\n')
                     .collect(Collectors.toList());
             StringBuilder sb = new StringBuilder();

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.dv8tion.jda.core.entities.TextChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stream.flarebot.flarebot.FlareBotManager;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.objects.NINO;
 import stream.flarebot.flarebot.util.Pair;
@@ -207,7 +207,7 @@ public class URLChecker {
     }
 
     public void runTests(String[] links, TextChannel channel) {
-        GuildWrapper wrapper = FlareBotManager.instance().getGuild(channel.getGuild().getId());
+        GuildWrapper wrapper = DataHandler.getGuild(channel.getGuild().getIdLong());
 
         byte before = wrapper.getNINO().getMode();
         Set<URLCheckFlag> oldFlags = wrapper.getNINO().getURLFlags();

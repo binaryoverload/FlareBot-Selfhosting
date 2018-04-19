@@ -4,18 +4,22 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.mod.Moderation;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.ReportManager;
 import stream.flarebot.flarebot.util.general.GuildUtils;
 
-import java.util.*;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import javax.annotation.Nullable;
 
 public class GuildWrapper {
 
@@ -23,7 +27,7 @@ public class GuildWrapper {
     public final long dataVersion = DATA_VERSION;
 
     private Long guildId;
-    private char prefix = Constants.COMMAND_CHAR;
+    private char prefix = Config.DEFAULT_PREFIX;
     private Welcome welcome = new Welcome();
     private PerGuildPermissions permissions = new PerGuildPermissions();
     private Set<String> autoAssignRoles = new HashSet<>();
@@ -233,7 +237,7 @@ public class GuildWrapper {
     }
 
     public char getPrefix() {
-        return prefix == Character.MIN_VALUE ? (prefix = Constants.COMMAND_CHAR) : prefix;
+        return prefix == Character.MIN_VALUE ? (prefix = Config.DEFAULT_PREFIX) : prefix;
     }
 
     public void setPrefix(char prefix) {

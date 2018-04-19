@@ -57,7 +57,7 @@ public class SelfAssignCommand implements Command {
                 base.append("```");
                 channel.sendMessage(base.toString()).queue();
             } else {
-                Role role = GuildUtils.getRole(args[0], guild.getGuildId(), channel);
+                Role role = GuildUtils.getRole(args[0], guild.getGuildIdLong(), channel);
                 if (role == null) return;
 
                 if (guild.getSelfAssignRoles().contains(role.getId())) {
@@ -77,7 +77,7 @@ public class SelfAssignCommand implements Command {
                     return;
                 }
 
-                Role role = GuildUtils.getRole(MessageUtils.getMessage(args, 1), guild.getGuildId(), channel);
+                Role role = GuildUtils.getRole(MessageUtils.getMessage(args, 1), guild.getGuildIdLong(), channel);
                 if (role != null) {
                     guild.getSelfAssignRoles().add(role.getId());
                     channel.sendMessage(new EmbedBuilder()
@@ -91,7 +91,7 @@ public class SelfAssignCommand implements Command {
                             channel, sender, 5000);
                     return;
                 }
-                Role role = GuildUtils.getRole(MessageUtils.getMessage(args, 1), guild.getGuildId(), channel);
+                Role role = GuildUtils.getRole(MessageUtils.getMessage(args, 1), guild.getGuildIdLong(), channel);
                 if (role != null) {
                     guild.getSelfAssignRoles().remove(role.getId());
                     channel.sendMessage(new EmbedBuilder()
@@ -99,7 +99,7 @@ public class SelfAssignCommand implements Command {
                             .queue();
                 }
             } else {
-                Role role = GuildUtils.getRole(MessageUtils.getMessage(args, 0), guild.getGuildId(), channel);
+                Role role = GuildUtils.getRole(MessageUtils.getMessage(args, 0), guild.getGuildIdLong(), channel);
                 if (role == null) return;
                 // TODO: Move these to Long
                 if (guild.getSelfAssignRoles().contains(role.getId())) {

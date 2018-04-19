@@ -6,14 +6,12 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.EventListener;
-import stream.flarebot.flarebot.FlareBotManager;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.mod.modlog.ModlogEvent;
 import stream.flarebot.flarebot.mod.modlog.ModlogHandler;
 import stream.flarebot.flarebot.objects.GuildWrapper;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.FormatUtils;
-import stream.flarebot.flarebot.util.general.VariableUtils;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -29,7 +27,7 @@ public class NINOListener implements EventListener {
         if (event.getAuthor().isBot()) return;
         if (event.getMember().hasPermission(event.getChannel(), Permission.MESSAGE_MANAGE)) return;
 
-        GuildWrapper wrapper = FlareBotManager.instance().getGuild(event.getGuild().getId());
+        GuildWrapper wrapper = DataHandler.getGuild(event.getGuild().getIdLong());
         if (wrapper.getNINO().isEnabled()) {
 
             // Apply the channel whitelist.
@@ -59,14 +57,12 @@ public class NINOListener implements EventListener {
                         eb.addField(MessageUtils.ZERO_WIDTH_SPACE, "Message was removed due to a suspicious TLD, " +
                                 "we delete ones which are commonly known to be used by spammers/scammers. " +
                                 "Check this out for more info: https://www.spamhaus.org/statistics/tlds/" +
-                                "\nIf you know this URL is perfectly fine and want us to whitelist it globally " +
-                                "come to our " + Constants.INVITE_MARKDOWN + " otherwise you can just whitelist for your guild. " +
+                                "\nIf you know this URL is perfectly fine you can just whitelist for your guild. " +
                                 "Check out the NINO command for mor info.", false);
                     } else if (flag == URLCheckFlag.PHISHING) {
                         eb.addField(MessageUtils.ZERO_WIDTH_SPACE, "These are sites which we have found to phish for " +
                                 "users personal information such as users account info or other. These are mainly " +
-                                "ones we know about and have been seen used around Discord. If you wish to report a " +
-                                "new one please join our " + Constants.INVITE_MARKDOWN, false);
+                                "ones we know about and have been seen used around Discord.", false);
                     }
 
                     ModlogHandler.getInstance().postToModlog(wrapper, ModlogEvent.NINO, event.getAuthor(),

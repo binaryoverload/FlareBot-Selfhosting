@@ -372,7 +372,7 @@ public class Events extends ListenerAdapter {
         GuildWrapper guild = DataHandler.getGuild(event.getGuild().getIdLong());
 
         if (cmd.getType().isAdmin()) {
-            if (PerGuildPermissions.isCreator(event.getMember().getUser())) {
+            if (PerGuildPermissions.isAdmin(event.getMember().getUser())) {
                 dispatchCommand(cmd, args, event, guild);
                 return;
             } else {

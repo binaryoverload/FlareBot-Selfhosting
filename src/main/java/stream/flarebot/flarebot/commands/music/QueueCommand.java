@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
@@ -27,7 +28,7 @@ public class QueueCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        PlayerManager manager = FlareBot.instance().getMusicManager();
+        PlayerManager manager = Client.instance().getMusicManager();
         if (message.getContentRaw().substring(1).startsWith("playlist")) {
             MessageUtils.sendWarningMessage("This command is deprecated! Please use `{%}queue` instead!", channel);
         }
@@ -82,7 +83,7 @@ public class QueueCommand implements Command {
     }
 
     private void send(TextChannel channel, Member sender) {
-        PlayerManager manager = FlareBot.instance().getMusicManager();
+        PlayerManager manager = Client.instance().getMusicManager();
         Track currentTrack = manager.getPlayer(channel.getGuild().getId()).getPlayingTrack();
 
         if (!manager.getPlayer(channel.getGuild().getId()).getPlaylist().isEmpty()

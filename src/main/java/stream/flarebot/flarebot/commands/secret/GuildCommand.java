@@ -2,12 +2,15 @@ package stream.flarebot.flarebot.commands.secret;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.FlareBotManager;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.commands.CommandType;
-import stream.flarebot.flarebot.commands.InternalCommand;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageType;
 import stream.flarebot.flarebot.util.MessageUtils;
@@ -17,7 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
-public class GuildCommand implements InternalCommand {
+public class GuildCommand implements AdminCommand {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
@@ -45,7 +48,7 @@ public class GuildCommand implements InternalCommand {
                         MessageUtils.sendErrorMessage("That guild ID is not valid!", channel);
                         return;
                     }
-                    wrapper = FlareBotManager.instance().getGuild(args[1]);
+                    wrapper = DataHandler.getGuild(Long.parseLong(args[1]));
                 }
                 Guild g = wrapper.getGuild();
 
@@ -64,7 +67,7 @@ public class GuildCommand implements InternalCommand {
                                     : "removed from") + " beta access!")
                             .build()).queue();
                 } else if (args.length == 2) {
-                    GuildWrapper guildWrapper = FlareBotManager.instance().getGuild(args[1]);
+                    GuildWrapper guildWrapper = DataHandler.getGuild(Long.parseLong(args[1]));
                     if (guildWrapper.getGuild() == null) {
                         MessageUtils.sendErrorMessage("That guild does not exist!", channel);
                     } else {
@@ -79,7 +82,7 @@ public class GuildCommand implements InternalCommand {
             } else if (args[0].equalsIgnoreCase("data")) {
                 GuildWrapper wrapper = guild;
                 if (args.length == 2)
-                    wrapper = FlareBotManager.instance().getGuild(args[1]);
+                    wrapper = DataHandler.getGuild(Long.parseLong(args[1]));
                 if (wrapper.getGuild() == null) {
                     MessageUtils.sendErrorMessage("That guild does not exist!", channel);
                 } else {
@@ -97,13 +100,13 @@ public class GuildCommand implements InternalCommand {
                 GuildWrapper wrapper = guild;
                 if (args.length >= 2) {
                     wrapper =
-                            FlareBotManager.instance().getGuild(Getters.getGuildById(args[1]).getId());
+                            DataHandler.getGuild(Long.parseLong(args[1]));
                 }
                 if (wrapper.getGuild() == null) {
                     MessageUtils.sendErrorMessage("Invalid guild ID!", channel);
                     return;
                 }
-                FlareBotManager.instance().saveGuild(wrapper.getGuildId(), wrapper, -1);
+                DataHandler.getGuilds().invalidate(guild.getGuild().getIdLong());
                 MessageUtils.sendSuccessMessage("Saved " + wrapper.getGuildId() + "'s guild data!", channel);
             } else
                 MessageUtils.sendUsage(this, channel, sender, args);
@@ -141,11 +144,11 @@ public class GuildCommand implements InternalCommand {
             MessageUtils.sendErrorMessage("That guild ID is not valid!", channel);
             return;
         }
-        if (FlareBotManager.instance().getGuild(guild1.getId()).isBlocked()) {
+        if (DataHandler.getGuild(guild1.getIdLong()).isBlocked()) {
             MessageUtils.sendErrorMessage("Guild already blocked!", channel);
             return;
         }
-        FlareBotManager.instance().getGuild(guild1.getId()).addBlocked(reason);
+        DataHandler.getGuild(guild1.getIdLong()).addBlocked(reason);
         MessageUtils.sendErrorMessage("Guild has been blocked!", channel);
     }
 
@@ -155,11 +158,11 @@ public class GuildCommand implements InternalCommand {
             MessageUtils.sendErrorMessage("That guild ID is not valid!", channel);
             return;
         }
-        if (!FlareBotManager.instance().getGuild(guild1.getId()).isBlocked()) {
+        if (!DataHandler.getGuild(guild1.getIdLong()).isBlocked()) {
             MessageUtils.sendErrorMessage("Guild not blocked!", channel);
             return;
         }
-        FlareBotManager.instance().getGuild(guild1.getId()).revokeBlock();
+        DataHandler.getGuild(guild1.getIdLong()).revokeBlock();
         MessageUtils.sendMessage(MessageType.SUCCESS, "Guild has been unblocked!", channel, 5000);
     }
 }

@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.music.extractors.Extractor;
 import stream.flarebot.flarebot.music.extractors.RandomExtractor;
@@ -32,7 +33,7 @@ public class VideoThread extends Thread {
 
     private VideoThread() {
         if (manager == null)
-            manager = FlareBot.instance().getMusicManager();
+            manager = Client.instance().getMusicManager();
         setName("Video Thread " + VIDEO_THREADS.activeCount());
     }
 

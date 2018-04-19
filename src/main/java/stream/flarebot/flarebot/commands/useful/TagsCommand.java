@@ -1,10 +1,13 @@
 package stream.flarebot.flarebot.commands.useful;
 
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 import org.apache.commons.lang3.StringUtils;
-import stream.flarebot.flarebot.FlareBotManager;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import stream.flarebot.flarebot.DataHandler;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
@@ -113,7 +116,7 @@ public class TagsCommand implements Command {
     }
 
     private String parseTag(Guild guild, String tag, String message, User user, TextChannel channel, String[] args) {
-        String parsed = VariableUtils.parseVariables(message, FlareBotManager.instance().getGuild(guild.getId()),
+        String parsed = VariableUtils.parseVariables(message, DataHandler.getGuild(guild.getIdLong()),
                 channel, user, args);
         if (message.contains("%user%") || message.contains("%mention%") || message.contains("{%}")
                 || message.contains("%prefix%") || message.contains("%tag%")) {

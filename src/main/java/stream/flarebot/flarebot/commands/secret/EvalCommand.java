@@ -18,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class EvalCommand implements InternalCommand {
+public class EvalCommand implements AdminCommand {
 
     private ScriptEngineManager manager = new ScriptEngineManager();
     private static final ThreadGroup EVAL_POOL = new ThreadGroup("EvalCommand Thread Pool");

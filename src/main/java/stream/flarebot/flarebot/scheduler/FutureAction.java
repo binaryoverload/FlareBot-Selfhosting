@@ -3,8 +3,8 @@ package stream.flarebot.flarebot.scheduler;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.FlareBotManager;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.mod.modlog.ModAction;
@@ -135,7 +135,7 @@ public class FutureAction {
     }
 
     public void execute() {
-        GuildWrapper gw = FlareBotManager.instance().getGuild(String.valueOf(guildId));
+        GuildWrapper gw = DataHandler.getGuild(guildId);
         if (gw == null || gw.getGuild() == null) return;
         switch (action) {
             case TEMP_MUTE:

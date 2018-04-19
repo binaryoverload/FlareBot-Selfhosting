@@ -2,6 +2,7 @@ package stream.flarebot.flarebot.commands.management;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.*;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.objects.GuildWrapper;
@@ -59,13 +60,13 @@ public class PermissionsCommand implements Command {
                             }
                         }
                     } else if (args[2].equalsIgnoreCase("create")) {
-                        if (!GuildWrapperLoader.ALLOWED_CHARS_REGEX.matcher(groupString).matches()) {
+                        if (!DataHandler.ALLOWED_CHARS_REGEX.matcher(groupString).matches()) {
                             if (groupString.length() > 32)
                                 MessageUtils.sendErrorMessage("Please make sure the group name is a maximum of 32 chars!", channel);
                             else if (groupString.length() < 3)
                                 MessageUtils.sendErrorMessage("Please make sure the group name is a minimum of 3 chars!", channel);
                             else
-                                MessageUtils.sendErrorMessage("This group name has invalid characters! Please only use alphanumeric characters (Letters and numbers) and any of these: `" + new String(GuildWrapperLoader.ALLOWED_SPECIAL_CHARACTERS) + "`", channel);
+                                MessageUtils.sendErrorMessage("This group name has invalid characters! Please only use alphanumeric characters (Letters and numbers) and any of these: `" + new String(DataHandler.ALLOWED_SPECIAL_CHARACTERS) + "`", channel);
                             return;
                         }
                         if (getPermissions(channel).addGroup(groupString)) {
@@ -81,7 +82,7 @@ public class PermissionsCommand implements Command {
                         return;
                     } else if (args[2].equalsIgnoreCase("link")) {
                         if (args.length == 4) {
-                            Role role = GuildUtils.getRole(args[3], guild.getGuildId());
+                            Role role = GuildUtils.getRole(args[3], guild.getGuildIdLong());
                             if (role != null) {
                                 group.linkRole(role.getId());
                                 MessageUtils.sendSuccessMessage("Successfully linked the group `" + groupString + "` to the role `" + role.getName() + "`", channel, sender);
@@ -132,7 +133,7 @@ public class PermissionsCommand implements Command {
                                     roleName = "here";
                                     break;
                                 default:
-                                    Role role = GuildUtils.getRole(args[3], guild.getGuildId());
+                                    Role role = GuildUtils.getRole(args[3], guild.getGuildIdLong());
                                     if (role != null) {
                                         roleMembers = guild.getGuild().getMembersWithRoles(role);
                                     } else {

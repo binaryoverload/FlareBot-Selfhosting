@@ -1,12 +1,14 @@
 package stream.flarebot.flarebot.commands.currency;
 
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.*;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.currency.CurrencyComparison;
 import stream.flarebot.flarebot.util.currency.CurrencyConversionUtil;
@@ -44,8 +46,7 @@ public class CurrencyCommand implements Command {
                             CurrencyConversionUtil.getCurrencyComparison(channel, sender, this, from, to))).queue();
                     return;
                 } catch (IOException e) {
-                    MessageUtils.sendException("There was an error completing your request! \n" +
-                            "Please join the support guild: " + Constants.INVITE_URL, e, channel);
+                    MessageUtils.sendException("There was an error completing your request!", e, channel);
                 }
             }
         }

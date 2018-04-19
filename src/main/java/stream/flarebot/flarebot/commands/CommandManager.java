@@ -37,7 +37,7 @@ public class CommandManager {
     // https://bots.are-pretty.sexy/214501.png
     // New way to process commands, this way has been proven to be quicker overall.
     public Command getCommand(String s, User user) {
-        /*if (PerGuildPermissions.isCreator(user) || (FlareBot.instance().isTestBot() && PerGuildPermissions.isContributor(user))) {
+        /*if (PerGuildPermissions.isAdmin(user) || (FlareBot.instance().isTestBot() && PerGuildPermissions.isContributor(user))) {
             for (Command cmd : getCommandsByType(CommandType.SECRET)) {
                 if (cmd.getCommand().equalsIgnoreCase(s))
                     return cmd;

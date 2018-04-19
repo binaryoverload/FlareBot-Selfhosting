@@ -8,6 +8,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.commands.*;
@@ -30,7 +31,7 @@ public class SkipCommand implements Command {
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
         boolean songMessage = message.getAuthor().getIdLong() == Getters.getSelfUser().getIdLong();
-        PlayerManager musicManager = FlareBot.instance().getMusicManager();
+        PlayerManager musicManager = Client.instance().getMusicManager();
         if (!channel.getGuild().getAudioManager().isConnected() ||
                 musicManager.getPlayer(channel.getGuild().getId()).getPlayingTrack() == null) {
             MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("I am not playing anything!").build(), TimeUnit.SECONDS.toMillis(5), channel);

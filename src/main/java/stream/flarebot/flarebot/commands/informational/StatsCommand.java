@@ -5,11 +5,10 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.FlareBotManager;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.music.VideoThread;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
@@ -27,7 +26,7 @@ public class StatsCommand implements Command {
         if (args.length == 0) {
             EmbedBuilder bld = MessageUtils.getEmbed(sender).setColor(Color.CYAN)
                     .setThumbnail(MessageUtils.getAvatar(channel.getJDA().getSelfUser()));
-            bld.setDescription("FlareBot v" + FlareBot.instance().getVersion() + " stats");
+            bld.setDescription("FlareBot v" + FlareBot.getVersion() + " stats");
             for (MultiSelectionContent<String, String, Boolean> content : Content.values) {
                 bld.addField(content.getName(), content.getReturn(), content.isAlign());
             }
@@ -72,7 +71,7 @@ public class StatsCommand implements Command {
         VOICE_CONNECTIONS("Voice Connections", Getters::getConnectedVoiceChannels),
         ACTIVE_CHANNELS("Channels Playing Music", Getters::getActiveVoiceChannels),
         TEXT_CHANNELS("Text Channels", () -> Getters.getTextChannelCache().size()),
-        LOADED_GUILDS("Loaded Guilds", () -> FlareBotManager.instance().getGuilds().size()),
+        LOADED_GUILDS("Loaded Guilds", () -> DataHandler.getGuilds().asMap().size()),
         COMMANDS_EXECUTED("Commands Executed", () -> FlareBot.instance().getEvents().getCommandCount()),
         UPTIME("Uptime", () -> FlareBot.instance().getUptime()),
         MEM_USAGE("Memory Usage", () -> getMb(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())),

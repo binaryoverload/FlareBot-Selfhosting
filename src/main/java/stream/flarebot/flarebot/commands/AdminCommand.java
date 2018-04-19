@@ -31,7 +31,7 @@ import stream.flarebot.flarebot.permissions.Permission;
  * <p>
  * Can be extended in the future for common internal methods
  */
-public interface InternalCommand extends Command {
+public interface AdminCommand extends Command {
 
     @Override
     default Permission getPermission() {
@@ -40,6 +40,6 @@ public interface InternalCommand extends Command {
 
     @Override
     default CommandType getType() {
-        return CommandType.INTERNAL;
+        return CommandType.SECRET;
     }
 }

@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.User;
 import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 
-public class QueryCommand implements InternalCommand {
+public class QueryCommand implements AdminCommand {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {

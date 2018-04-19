@@ -10,11 +10,10 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.exceptions.HierarchyException;
 import net.dv8tion.jda.core.exceptions.PermissionException;
 import org.joda.time.Period;
-import stream.flarebot.flarebot.FlareBot;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.scheduler.FutureAction;
 import stream.flarebot.flarebot.scheduler.Scheduler;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.FormatUtils;
 
@@ -164,7 +163,7 @@ public class ModlogHandler {
             return;
         }
 
-        if (target != null && target.getIdLong() == FlareBot.instance().getClient().getSelfUser().getIdLong()) {
+        if (target != null && target.getIdLong() == Client.instance().getSelfUser().getIdLong()) {
             if (modAction == ModAction.UNBAN || modAction == ModAction.UNMUTE)
                 MessageUtils.sendWarningMessage("W-why would you want to do that in the first place. Meanie :(", channel);
             else
@@ -197,8 +196,6 @@ public class ModlogHandler {
                             channel.sendMessage(new EmbedBuilder().setColor(Color.GREEN)
                                     .setDescription("The ban hammer has been struck on " + target.getName()
                                             + " <:banhammer:368861419602575364>\nReason: " + rsn)
-                                    .setImage(channel.getGuild().getIdLong() == Constants.OFFICIAL_GUILD ?
-                                            "https://flarebot.stream/img/banhammer.png" : null)
                                     .build()).queue());
                     break;
                 case SOFTBAN:
@@ -215,8 +212,6 @@ public class ModlogHandler {
                             channel.sendMessage(new EmbedBuilder().setColor(Color.GREEN)
                                     .setDescription("The ban hammer has been forcefully struck on " + target.getName()
                                             + " <:banhammer:368861419602575364>\nReason: " + rsn)
-                                    .setImage(channel.getGuild().getIdLong() == Constants.OFFICIAL_GUILD ?
-                                            "https://flarebot.stream/img/banhammer.png" : null)
                                     .build()).queue());
                     break;
                 case TEMP_BAN: {
@@ -225,8 +220,6 @@ public class ModlogHandler {
                         channel.sendMessage(new EmbedBuilder()
                                 .setDescription("The ban hammer has been struck on " + target.getName() + " for "
                                         + FormatUtils.formatJodaTime(period) + "\nReason: " + rsn)
-                                .setImage(channel.getGuild().getIdLong() == Constants.OFFICIAL_GUILD
-                                        ? "https://flarebot.stream/img/banhammer.png" : null)
                                 .setColor(Color.WHITE).build()).queue();
                         Scheduler.queueFutureAction(channel.getGuild().getIdLong(), channel.getIdLong(), sender.getIdLong(),
                                 target.getIdLong(), reason, period, FutureAction.Action.TEMP_BAN);

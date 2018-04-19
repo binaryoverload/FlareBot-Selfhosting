@@ -4,31 +4,30 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.FlareBotManager;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
-import stream.flarebot.flarebot.commands.InternalCommand;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
+import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.GuildUtils;
 
 import java.awt.Color;
 import java.util.Map;
 
-public class DisableCommandCommand implements InternalCommand {
+public class DisableCommandCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        if (PerGuildPermissions.isCreator(sender) || PerGuildPermissions.isContributor(sender)) {
+        if (PerGuildPermissions.isAdmin(sender)) {
             if (args.length == 0) {
                 channel.sendMessage("Can't really disable commands if you don't supply any ¯\\_(ツ)_/¯").queue();
                 return;
             }
             if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
                 StringBuilder sb = new StringBuilder();
-                Map<String, String> disabledCmds = FlareBotManager.instance().getDisabledCommands();
+                Map<String, String> disabledCmds = Client.instance().getDisabledCommands();
                 for (String cmd : disabledCmds.keySet()) {
                     sb.append("`").append(cmd).append("` - ").append(disabledCmds.get(cmd));
                 }
@@ -48,13 +47,12 @@ public class DisableCommandCommand implements InternalCommand {
                 if (cmd == null || cmd.getType() == CommandType.SECRET) continue;
 
                 // If it's already disabled and there's only 1 (with a reason supplied) just update the reason.
-                if (cmds.length == 1 && msg.contains("-") && FlareBotManager.instance().isCommandDisabled(cmd.getCommand())) {
-                    FlareBotManager.instance().getDisabledCommands().put(cmd.getCommand(), reason);
+                if (cmds.length == 1 && msg.contains("-") && Client.instance().isCommandDisabled(cmd.getCommand())) {
+                    Client.instance().getDisabledCommands().put(cmd.getCommand(), reason);
                     sb.append("`").append(cmd.getCommand()).append("` - ").append(getEmote(false))
                             .append(" New reason: ").append(reason);
                 } else
-                    sb.append("`").append(cmd.getCommand()).append("` - ").append(getEmote(FlareBotManager.instance()
-                            .toggleCommand(cmd.getCommand(), reason))).append("\n");
+                    sb.append("`").append(cmd.getCommand()).append("` - ").append(getEmote(Client.instance().toggleCommand(cmd.getCommand(), reason))).append("\n");
             }
             if (sb.toString().isEmpty()) return;
             channel.sendMessage(MessageUtils.getEmbed(sender).setColor(Color.orange).setDescription(sb.toString())
@@ -80,6 +78,11 @@ public class DisableCommandCommand implements InternalCommand {
     @Override
     public CommandType getType() {
         return CommandType.SECRET;
+    }
+
+    @Override
+    public Permission getPermission() {
+        return null;
     }
 
     @Override

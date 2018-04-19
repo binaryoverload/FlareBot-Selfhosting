@@ -6,14 +6,14 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.CommandType;
-import stream.flarebot.flarebot.commands.InternalCommand;
+import stream.flarebot.flarebot.commands.AdminCommand;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 
-public class QuitCommand implements InternalCommand {
+public class QuitCommand implements AdminCommand {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        FlareBot.instance().quit(false);
+        FlareBot.instance().quit();
     }
 
     @Override

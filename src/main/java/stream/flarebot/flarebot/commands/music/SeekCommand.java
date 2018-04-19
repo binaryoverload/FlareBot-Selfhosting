@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.joda.time.Duration;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
@@ -26,7 +27,7 @@ public class SeekCommand implements Command {
                 MessageUtils.sendErrorMessage("You have entered an invalid duration to skip to!\n" + getExtraInfo(), channel);
                 return;
             }
-            Track t = FlareBot.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
+            Track t = Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
             if (t == null) {
                 MessageUtils.sendErrorMessage("There is no song currently playing!", channel);
                 return;

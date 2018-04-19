@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
@@ -14,7 +15,7 @@ public class PauseCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        FlareBot.instance().getMusicManager().getPlayer(channel.getGuild().getId()).setPaused(true);
+        Client.instance().getMusicManager().getPlayer(channel.getGuild().getId()).setPaused(true);
     }
 
     @Override

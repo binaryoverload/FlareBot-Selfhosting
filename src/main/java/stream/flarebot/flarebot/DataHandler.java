@@ -22,9 +22,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DataHandler {
+
+    public static final char[] ALLOWED_SPECIAL_CHARACTERS = {'$', '_', ' ', '&', '%', '£', '!', '*', '@', '#', ':'};
+    public static final Pattern ALLOWED_CHARS_REGEX = Pattern.compile("[\\w" + new String(ALLOWED_SPECIAL_CHARACTERS) + "\\p{Ll}\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}]{3,32}");
 
     public static final Gson gson = new GsonBuilder().create();
 
@@ -70,7 +74,7 @@ public class DataHandler {
         return data.get();
     }
 
-    public void savePlaylist(Command command, TextChannel channel, String ownerId, boolean overwriteAllowed, String name, List<String> songs) {
+    public static void savePlaylist(Command command, TextChannel channel, String ownerId, boolean overwriteAllowed, String name, List<String> songs) {
         DatabaseManager.run(connection -> {
             PreparedStatement savePlaylistStatement = connection.prepareStatement("SELECT * FROM playlists " +
                     "WHERE playlist_name = ? AND guild_id = ?");
@@ -102,7 +106,7 @@ public class DataHandler {
         });
     }
 
-    public ArrayList<String> loadPlaylist(TextChannel channel, User sender, String name) {
+    public static ArrayList<String> loadPlaylist(TextChannel channel, User sender, String name) {
         AtomicReference<ArrayList<String>> list = new AtomicReference<>(new ArrayList<>());
         DatabaseManager.run(connection -> {
             PreparedStatement savePlaylistStatement = connection.prepareStatement("SELECT * FROM playlists " +
@@ -151,5 +155,7 @@ public class DataHandler {
         FlareBot.LOGGER.info("Loaded " + loaded.get() + " future tasks");
     }
 
-
+    public static Cache<Long, GuildWrapper> getGuilds() {
+        return guilds;
+    }
 }

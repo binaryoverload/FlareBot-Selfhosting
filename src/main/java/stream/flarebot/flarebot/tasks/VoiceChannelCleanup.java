@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.metrics.Metrics;
@@ -69,7 +70,7 @@ public class VoiceChannelCleanup extends FlareBotTask {
 
                     if (getHumansInChannel(vc) == 0) {
                         killedVcs.incrementAndGet();
-                        cleanup(guild, FlareBot.instance().getMusicManager().getPlayer(guild.getId()), vc.getIdLong());
+                        cleanup(guild, Client.instance().getMusicManager().getPlayer(guild.getId()), vc.getIdLong());
                     } else if (isPlayingMusic(vc)) {
                         VC_LAST_USED.put(vc.getIdLong(), System.currentTimeMillis());
                     } else {
@@ -82,7 +83,7 @@ public class VoiceChannelCleanup extends FlareBotTask {
 
                         if (System.currentTimeMillis() - lastUsed >= CLEANUP_THRESHOLD) {
                             killedVcs.incrementAndGet();
-                            cleanup(guild, FlareBot.instance().getMusicManager().getPlayer(guild.getId()), vc.getIdLong());
+                            cleanup(guild, Client.instance().getMusicManager().getPlayer(guild.getId()), vc.getIdLong());
                         }
                     }
                 }
@@ -103,7 +104,7 @@ public class VoiceChannelCleanup extends FlareBotTask {
         final AtomicInteger killedPlayers = new AtomicInteger(0);
         final AtomicInteger songsCleared = new AtomicInteger(0);
 
-        FlareBot.instance().getMusicManager().getPlayers().forEach(player -> {
+        Client.instance().getMusicManager().getPlayers().forEach(player -> {
             try {
                 totalPlayers.incrementAndGet();
                 long guildId = Long.parseLong(player.getGuildId());
@@ -168,7 +169,7 @@ public class VoiceChannelCleanup extends FlareBotTask {
             closedConnections.incrementAndGet();
         }
 
-        FlareBot.instance().getMusicManager().deletePlayer(player);
+        Client.instance().getMusicManager().deletePlayer(player);
         VC_LAST_USED.remove(id);
     }
 
@@ -181,7 +182,7 @@ public class VoiceChannelCleanup extends FlareBotTask {
     }
 
     private boolean isPlayingMusic(VoiceChannel vc) {
-        Player player = FlareBot.instance().getMusicManager().getPlayer(vc.getGuild().getId());
+        Player player = Client.instance().getMusicManager().getPlayer(vc.getGuild().getId());
         return player != null && !player.getPaused() && player.getPlayingTrack() != null;
     }
 }

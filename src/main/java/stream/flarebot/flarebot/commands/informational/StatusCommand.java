@@ -8,11 +8,9 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.ShardUtils;
 
 import java.util.Arrays;
@@ -56,8 +54,7 @@ public class StatusCommand implements Command {
                     "down to discord not wanting to co-op with us :( please be patient while these ")
                     .append(highResponseTime).append(" shards go back to normal!").append("\n");
         if (deadShard > 5)
-            sb.append(" SEVERE: We have quite a few dead shards! Please report this on the [Support Server](")
-                    .append(Constants.INVITE_URL).append(")").append("\n");
+            sb.append(" SEVERE: We have quite a few dead shards!").append("\n");
 
         String status = deadShard == 0 && highResponseTime == 0 && reconnecting < (Math.max(quaterShards, 5))
                 ? "Good! :)" : "Issues :/";

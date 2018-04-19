@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.User;
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.CommandType;
-import stream.flarebot.flarebot.commands.InternalCommand;
+import stream.flarebot.flarebot.commands.AdminCommand;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.GeneralUtils;
@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-public class LogsCommand implements InternalCommand {
+public class LogsCommand implements AdminCommand {
 
     private final int DEFAULT_LINE_COUNT = 500;
 

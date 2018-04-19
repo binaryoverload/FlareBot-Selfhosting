@@ -15,7 +15,7 @@ public class PerGuildPermissions {
 
     public boolean hasPermission(Member user, Permission permission) {
         // So we can go into servers and figure out any issues they have.
-        if (isCreator(user.getUser()))
+        if (isAdmin(user.getUser()))
             return true;
         if (user.isOwner())
             return true;
@@ -87,7 +87,7 @@ public class PerGuildPermissions {
         return groups;
     }
 
-    public static boolean isCreator(net.dv8tion.jda.core.entities.User user) {
+    public static boolean isAdmin(net.dv8tion.jda.core.entities.User user) {
         return Config.INS.getAdmins().contains(user.getIdLong());
     }
 

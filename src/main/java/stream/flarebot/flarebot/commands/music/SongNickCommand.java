@@ -5,6 +5,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
@@ -29,8 +30,8 @@ public class SongNickCommand implements Command {
                 return;
             }
             guild.setSongnick(true);
-            if (FlareBot.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack() != null) {
-                Track track = FlareBot.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
+            if (Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack() != null) {
+                Track track = Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
                 String str = null;
                 if (track != null) {
                     str = track.getTrack().getInfo().title;

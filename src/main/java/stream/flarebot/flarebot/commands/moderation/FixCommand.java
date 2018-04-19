@@ -1,14 +1,16 @@
 package stream.flarebot.flarebot.commands.moderation;
 
 import com.arsenarsen.lavaplayerbridge.player.Player;
-import net.dv8tion.jda.core.entities.*;
-import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.ConfirmUtil;
-import stream.flarebot.flarebot.util.Constants;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.objects.RunnableWrapper;
 
@@ -56,7 +58,7 @@ public class FixCommand implements Command {
         }
         boolean nickReset = false;
         if (guild.isSongnickEnabled()) {
-            Player player = FlareBot.instance().getMusicManager().getPlayer(guild.getGuildId());
+            Player player = Client.instance().getMusicManager().getPlayer(guild.getGuildId());
             String nickname = null;
             if (player.getPlayingTrack() != null) {
                 nickname = player.getPlayingTrack().getTrack().getInfo().title;
@@ -74,8 +76,7 @@ public class FixCommand implements Command {
         }
 
         channel.sendMessage(MessageUtils.getEmbed(sender).setDescription(
-                (rolesAdded == 0 && !nickReset ? "No fix needed!\n" +
-                        "If you are still having issues, please join our support server here: " + Constants.INVITE_URL :
+                (rolesAdded == 0 && !nickReset ? "No fix needed!" :
                         "Added " + rolesAdded + " roles. Fixed nick: " + nickReset)).build()).queue();
     }
 

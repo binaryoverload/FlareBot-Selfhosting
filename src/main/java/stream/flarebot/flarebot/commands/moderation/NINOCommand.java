@@ -236,7 +236,7 @@ public class NINOCommand implements Command {
                             "any human can click it). Example: `https://goo.gl/NfYi94`", channel, sender);
                 }
             } else if (args[0].equalsIgnoreCase("test")) {
-                if (!PerGuildPermissions.isCreator(sender)) return;
+                if (!PerGuildPermissions.isAdmin(sender)) return;
                 String links = MessageUtils.getMessage(args, 1);
 
                 URLChecker.instance().runTests(links.split("\n"), channel);

@@ -6,19 +6,19 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import java.util.Queue;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
-import stream.flarebot.flarebot.FlareBotManager;
+import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.commands.music.SkipCommand;
-import stream.flarebot.flarebot.commands.music.SongCommand;
+import stream.flarebot.flarebot.commands.music.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.FormatUtils;
 import stream.flarebot.flarebot.util.general.GuildUtils;
 import stream.flarebot.flarebot.util.votes.VoteUtil;
+
+import java.util.Queue;
 
 public class PlayerListener extends AudioEventAdapter {
 
@@ -30,14 +30,9 @@ public class PlayerListener extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer aplayer, AudioTrack atrack, AudioTrackEndReason reason) {
-        GuildWrapper wrapper = FlareBotManager.instance().getGuild(player.getGuildId());
+        GuildWrapper wrapper = DataHandler.getGuild(Long.parseLong(player.getGuildId()));
 
         if (wrapper == null) return;
-
-        // No song on next
-        if (player.getPlaylist().isEmpty()) {
-            FlareBotManager.instance().getLastActive().put(Long.parseLong(player.getGuildId()), System.currentTimeMillis());
-        }
 
         VoteUtil.remove(SkipCommand.getSkipUUID(), wrapper.getGuild());
 
@@ -61,9 +56,8 @@ public class PlayerListener extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer aplayer, AudioTrack atrack) {
-        FlareBotManager.instance().getLastActive().remove(Long.parseLong(player.getGuildId()));
 
-        GuildWrapper wrapper = FlareBotManager.instance().getGuild(player.getGuildId());
+        GuildWrapper wrapper = DataHandler.getGuild(Long.parseLong(player.getGuildId()));
         if (wrapper.getMusicAnnounceChannelId() != null) {
             TextChannel c = Getters.getChannelById(wrapper.getMusicAnnounceChannelId());
             if (c != null) {
