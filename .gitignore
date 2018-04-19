@@ -12,6 +12,8 @@ logs/
 /src/main/resources/sentry.properties
 *.log
 *.json
+!config.example.yml
+*.yml
 out/
 /FlareBot/
 
