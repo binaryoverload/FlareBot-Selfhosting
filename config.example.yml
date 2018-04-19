@@ -40,7 +40,7 @@ presence: 'Walshy is cool'
 #redisPort: '6379'
 #redisPassword: 'password'
 
-eventLogWebhook: ''
+errorLogWebhook: ''
 importantLogWebhook: ''
 statusLogWebhook: ''
 
