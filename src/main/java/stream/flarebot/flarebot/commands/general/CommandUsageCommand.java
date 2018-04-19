@@ -8,6 +8,7 @@ import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.objects.GuildWrapper;
+import stream.flarebot.flarebot.permissions.PerGuildPermissions;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.GeneralUtils;
@@ -20,7 +21,7 @@ public class CommandUsageCommand implements Command {
             MessageUtils.sendUsage(this, channel, sender, args);
         } else {
             Command c = FlareBot.getCommandManager().getCommand(args[0], sender);
-            if (c == null || (c.getType().isInternal() && !GeneralUtils.canRunInternalCommand(c, sender)))
+            if (c == null || (c.getType().isAdmin() && !PerGuildPermissions.isAdmin(sender)))
                 MessageUtils.sendErrorMessage("That is not a command!", channel);
             else
                 MessageUtils.sendUsage(c, channel, sender, new String[]{});

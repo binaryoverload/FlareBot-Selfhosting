@@ -8,7 +8,6 @@ import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.requests.ErrorResponse;
 import net.dv8tion.jda.core.requests.RestAction;
-import net.dv8tion.jda.webhook.WebhookClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.commands.*;
@@ -22,20 +21,11 @@ import stream.flarebot.flarebot.util.ShardUtils;
 import stream.flarebot.flarebot.util.general.GeneralUtils;
 
 import javax.security.auth.login.LoginException;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
@@ -232,7 +222,7 @@ public class FlareBot {
         new FlareBotTask("DeadShard-Checker") {
             @Override
             public void run() {
-                if (Config.INS.getImportantWebhook() == null) {
+                if (Config.INS.getImportantLogWebhookClient() == null) {
                     LOGGER.warn("No webhook for the important-log channel! Due to this the dead shard checker has been disabled!");
                     cancel();
                     return;
@@ -246,7 +236,7 @@ public class FlareBot {
                 if (Getters.getShards().stream().anyMatch(shard -> ShardUtils.isDead(shard, TimeUnit.MINUTES.toMillis(10)))) {
                     Getters.getShards().stream().filter(shard -> ShardUtils.isDead(shard, TimeUnit.MINUTES.toMillis(10)))
                             .forEach(shard -> {
-                                Config.INS.getImportantWebhook().send("Restarting " + ShardUtils.getShardId(shard)
+                                Config.INS.getImportantLogWebhookClient().send("Restarting " + ShardUtils.getShardId(shard)
                                         + " as it seems to be dead.");
                                 Client.instance().getShardManager().restart(ShardUtils.getShardId(shard));
                             });
@@ -257,7 +247,7 @@ public class FlareBot {
                                 .collect(Collectors.toSet());
 
                 if (!deadShards.isEmpty()) {
-                    Config.INS.getImportantWebhook().send("Found " + deadShards.size() + " possibly dead shards! Shards: " +
+                    Config.INS.getImportantLogWebhookClient().send("Found " + deadShards.size() + " possibly dead shards! Shards: " +
                             deadShards.toString());
                 }
             }

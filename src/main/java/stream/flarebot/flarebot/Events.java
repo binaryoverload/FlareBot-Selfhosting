@@ -1,6 +1,5 @@
 package stream.flarebot.flarebot;
 
-import io.prometheus.client.Histogram;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
@@ -28,9 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.commands.music.*;
-import stream.flarebot.flarebot.commands.secret.update.*;
 import stream.flarebot.flarebot.database.RedisController;
-import stream.flarebot.flarebot.metrics.Metrics;
 import stream.flarebot.flarebot.mod.modlog.ModlogEvent;
 import stream.flarebot.flarebot.mod.modlog.ModlogHandler;
 import stream.flarebot.flarebot.objects.GuildWrapper;
@@ -102,7 +99,6 @@ public class Events extends ListenerAdapter {
                     }
                     button.onClick(ButtonUtil.getButtonGroup(event.getMessageId()).getOwner(), event.getUser());
                     String emote = event.getReactionEmote() != null ? event.getReactionEmote().getName() + "(" + event.getReactionEmote().getId() + ")" : button.getUnicode();
-                    Metrics.buttonsPressed.labels(emote, ButtonUtil.getButtonGroup(event.getMessageId()).getName()).inc();
                     if (!event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE)) {
                         return;
                     }
@@ -250,11 +246,6 @@ public class Events extends ListenerAdapter {
             if (Client.instance().getMusicManager().hasPlayer(event.getGuild().getId())) {
                 Client.instance().getMusicManager().getPlayer(event.getGuild().getId()).setPaused(true);
             }
-            if (Getters.getActiveVoiceChannels() == 0 && FlareBot.NOVOICE_UPDATING.get()) {
-                Config.INS.getImportantWebhook()
-                        .send("I am now updating, there are no voice channels active!");
-                UpdateCommand.update(true, null);
-            }
         } else {
             handleVoiceConnectivity(event.getChannelLeft());
         }
@@ -342,8 +333,7 @@ public class Events extends ListenerAdapter {
     @Override
     public void onStatusChange(StatusChangeEvent event) {
         if (FlareBot.EXITING.get()) return;
-        WebhookClient statusHook = Config.INS.getImportantWebhook();
-        statusHook.send(String.format("onStatusChange: %s -> %s SHARD: %d",
+        Config.INS.getStatusLogWebhookClient().send(String.format("onStatusChange: %s -> %s SHARD: %d",
                 event.getOldStatus(), event.getNewStatus(),
                 event.getJDA().getShardInfo() != null ? event.getJDA().getShardInfo().getShardId()
                         : null));
@@ -368,7 +358,6 @@ public class Events extends ListenerAdapter {
     }
 
     private void handleCommand(GuildMessageReceivedEvent event, Command cmd, String[] args) {
-        Metrics.commandsReceived.labels(cmd.getClass().getSimpleName()).inc();
         GuildWrapper guild = DataHandler.getGuild(event.getGuild().getIdLong());
 
         if (cmd.getType().isAdmin()) {
@@ -458,7 +447,6 @@ public class Events extends ListenerAdapter {
                     MessageUtils.sendErrorMessage("We detected command spam in this guild. No commands will be able to " +
                             "be run in this guild for a little bit.", event.getChannel());
                     guild.addBlocked("Command spam", System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
-                    Metrics.blocksGivenOut.labels(guild.getGuildId()).inc();
                 }
             } else {
                 spamMap.put(event.getGuild().getId(), messages + 1);
@@ -486,12 +474,8 @@ public class Events extends ListenerAdapter {
                     .put("guildId", guild.getGuildId()));*/
             commandCounter.incrementAndGet();
             try {
-                Histogram.Timer executionTimer = Metrics.commandExecutionTime.labels(cmd.getClass().getSimpleName()).startTimer();
-                cmd.onCommand(event.getAuthor(), guild, event.getChannel(), event.getMessage(), args, event
+               cmd.onCommand(event.getAuthor(), guild, event.getChannel(), event.getMessage(), args, event
                         .getMember());
-                executionTimer.observeDuration();
-                Metrics.commandsExecuted.labels(cmd.getClass().getSimpleName()).inc();
-
                 MessageEmbed.Field field = null;
                 if (args.length > 0) {
                     String s = MessageUtils.getMessage(args, 0).replaceAll("`", "'");
@@ -504,7 +488,6 @@ public class Events extends ListenerAdapter {
                                 + event.getChannel().getIdLong() + ")", true),
                         new MessageEmbed.Field("Command", cmd.getCommand(), true), field);
             } catch (Exception ex) {
-                Metrics.commandExceptions.labels(ex.getClass().getSimpleName()).inc();
                 MessageUtils.sendException("**There was an internal error trying to execute your command**", ex, event
                         .getChannel());
                 LOGGER.error("Exception in guild " + event.getGuild().getId() + "!\n" + '\'' + cmd.getCommand() + "' "

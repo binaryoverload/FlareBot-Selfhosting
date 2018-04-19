@@ -41,13 +41,13 @@ public class ErrorCatcher extends Filter<ILoggingEvent> {
                 }
                 if (event.getLevel() == Level.WARN) {
                     // Warnings should not have a throwable!
-                    MessageUtils.sendMessage(MessageType.WARNING, finalMsg, Config.INS.getErrorWebhook());
+                    MessageUtils.sendMessage(MessageType.WARNING, finalMsg, Config.INS.getErrorLogWebhookClient());
                     return;
                 }
                 if (throwable != null) {
-                    MessageUtils.sendException(finalMsg, throwable, Config.INS.getErrorWebhook());
+                    MessageUtils.sendException(finalMsg, throwable, Config.INS.getErrorLogWebhookClient());
                 } else {
-                    MessageUtils.sendMessage(MessageType.ERROR ,finalMsg, Config.INS.getErrorWebhook());
+                    MessageUtils.sendMessage(MessageType.ERROR ,finalMsg, Config.INS.getErrorLogWebhookClient());
                 }
             });
         }

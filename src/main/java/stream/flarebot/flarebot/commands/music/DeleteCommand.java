@@ -1,17 +1,18 @@
 package stream.flarebot.flarebot.commands.music;
 
-import com.datastax.driver.core.ResultSet;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import stream.flarebot.flarebot.commands.*;
+import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 
 import java.awt.Color;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class DeleteCommand implements Command {
 
@@ -23,14 +24,16 @@ public class DeleteCommand implements Command {
         }
         channel.sendTyping().complete();
         String name = MessageUtils.getMessage(args, 0);
-        CassandraController.runTask(session -> {
-            ResultSet set = session.execute(session
-                    .prepare("SELECT playlist_name FROM flarebot.playlist WHERE playlist_name = ? AND guild_id = ?")
-                    .bind().setString(0, name).setString(1, channel.getGuild().getId()));
-            if (set.one() != null) {
-                session.execute(session
-                        .prepare("DELETE FROM flarebot.playlist WHERE playlist_name = ? AND guild_id = ?").bind()
-                        .setString(0, name).setString(1, channel.getGuild().getId()));
+        DatabaseManager.run(connection -> {
+            PreparedStatement select = connection.prepareStatement("SELECT playlist_name FROM playlists WHERE playlist_name = ? AND guild_id = ?");
+            select.setString(1, name);
+            select.setLong(2, channel.getGuild().getIdLong());
+            ResultSet set = select.executeQuery();
+            if (!set.isBeforeFirst()) {
+                PreparedStatement delete = connection.prepareStatement("DELETE FROM playlists WHERE playlist_name = ? AND guild_id = ?");
+                delete.setString(1, name);
+                delete.setLong(2, channel.getGuild().getIdLong());
+                delete.execute();
                 channel.sendMessage(MessageUtils.getEmbed(sender)
                         .setDescription(String
                                 .format("Removed the playlist '%s'", name)).setColor(Color.green)

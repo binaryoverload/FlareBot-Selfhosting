@@ -8,9 +8,7 @@ import net.dv8tion.jda.core.entities.VoiceChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.Client;
-import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.metrics.Metrics;
 import stream.flarebot.flarebot.scheduler.FlareBotTask;
 
 import java.util.HashMap;
@@ -94,7 +92,6 @@ public class VoiceChannelCleanup extends FlareBotTask {
 
         logger.info("Checked {} guilds for inactive voice channels.", totalGuilds.get());
         logger.info("Killed {} out of {} voice connections!", killedVcs.get(), totalVcs.get());
-        Metrics.voiceChannelsCleanedUp.inc(killedVcs.get());
     }
 
     private void cleanupPlayers() {
@@ -156,7 +153,6 @@ public class VoiceChannelCleanup extends FlareBotTask {
         logger.info("Checked {} players for inactivity.", totalPlayers.get());
         logger.info("Killed {} out of {} players!", killedPlayers.get(), totalPlayers.get());
         logger.info("Cleaned {} songs from players", songsCleared.get());
-        Metrics.playersCleanedUp.inc(killedPlayers.get());
     }
 
     private void cleanup(Guild guild, Player player, long id) {

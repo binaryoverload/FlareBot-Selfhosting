@@ -1,0 +1,54 @@
+#######################################################################
+#                                                                     #
+#     ___________.__                      __________        __        #
+#     \_   _____/|  | _____ _______   ____\______   \ _____/  |_      #
+#      |    __)  |  | \__  \\_  __ \_/ __ \|    |  _//  _ \   __\     #
+#      |     \   |  |__/ __ \|  | \/\  ___/|    |   (  <_> )  |       #
+#      \___  /   |____(____  /__|    \___  >______  /\____/|__|       #
+#          \/              \/            \/       \/                  #
+#                                                                     #
+# FlareBot configuration, see the comments above each field to see    #
+# what it does and if it is required.                                 #
+#                                                                     #
+# ALL required fields with have a '# REQUIRED' above.                 #
+#######################################################################
+
+# REQUIRED
+# The token is required to even start the bot, you can crete your bot application and get the token
+# here: discordapp.com/developers/applications/me
+token: ''
+
+# REQUIRED
+# This is the YouTube API key, you can generate one here: https://console.developers.google.com
+youtubeApi: ''
+
+# REQUIRED
+# This is used to connect to the database.
+database:
+  username: 'root'
+  password: ''
+  name: 'flarebot'
+  host: 'localhost'
+  port: 5432
+
+# This is the game which the bot will be playing.
+presence: 'Walshy is cool'
+
+# Redis is used for caching messages so that the modlog can log them on edit and remove.
+# Without Redis message edits and deletes will not be logged.
+#redisHost: 'localhost'
+#redisPort: '6379'
+#redisPassword: 'password'
+
+eventLogWebhook: ''
+importantLogWebhook: ''
+statusLogWebhook: ''
+
+# The number of shards the bot should use, LEAVE THIS AT -1 IF YOU DO NOT KNOW HOW TO HANDLE SHARDS.
+numShards: -1
+
+# List of admins user IDs
+admins:
+ - "ID GOES HERE"
+
+#

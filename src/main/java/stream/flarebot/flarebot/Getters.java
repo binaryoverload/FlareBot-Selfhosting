@@ -137,8 +137,4 @@ public class Getters {
     public static ShardManager getShardManager() {
         return client().getShardManager();
     }
-
-    public static Guild getOfficialGuild() {
-        return getGuildById(Config.INS.getOfficialGuild());
-    }
 }

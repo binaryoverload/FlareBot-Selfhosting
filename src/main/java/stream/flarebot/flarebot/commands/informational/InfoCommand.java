@@ -8,9 +8,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.GitHandler;
-import stream.flarebot.flarebot.commands.Command;
-import stream.flarebot.flarebot.commands.CommandType;
+import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
@@ -68,7 +66,6 @@ public class InfoCommand implements Command {
         SERVERS("Servers", () -> String.valueOf(Getters.getGuildCache().size())),
         VERSION("Version", FlareBot.getVersion()),
         JDA_VERSION("JDA version", JDAInfo.VERSION),
-        GIT("Git Revision", (GitHandler.getLatestCommitId() != null ? GitHandler.getLatestCommitId() : "Unknown")),
         SOURCE("Source", "[`GitHub`](https://github.com/FlareBot/FlareBot)"),
         INVITE("Invite", String.format("[`Invite`](%s)", FlareBot.getInvite())),
         EMPTY("\u200B", "\u200B", false),

@@ -70,15 +70,14 @@ public class Config {
     private int hikariPoolSize;
 
     // Hooks and test bot
-    private String errorLogChannel;
+    private String errorLogWebhook;
     private WebhookClient errorLogHook;
-    private String importantLogChannel;
+    private String importantLogWebhook;
     private WebhookClient importantLogHook;
-    private String statusLogChannel;
+    private String statusLogWebhook;
     private WebhookClient statusLogHook;
 
     private ArrayList<Long> admins;
-    private Long officialGuild;
 
     // Err, not sure what to really name this.
     private int numShards;
@@ -134,6 +133,7 @@ public class Config {
                 }
                 databaseName = details.getOrDefault("name", "flarebot");
 
+                log.info(String.format("Using Host: %s Port: %d Name: %s for PostegreSQL", databaseHost, databasePort, databaseName));
             } else {
                 log.error("You need to supply postgresql database details!");
                 System.exit(1);
@@ -150,9 +150,9 @@ public class Config {
             log.info("Hikari max pool size set to " + hikariPoolSize);
 
 
-            errorLogChannel = (String) config.getOrDefault("errorLogChannel", "");
-            importantLogChannel = (String) config.getOrDefault("importantLogChannel", "");
-            statusLogChannel = (String) config.getOrDefault("statusLogChannel", "");
+            errorLogWebhook = (String) config.getOrDefault("errorLogWebhook", "");
+            importantLogWebhook = (String) config.getOrDefault("importantLogWebhook", "");
+            statusLogWebhook = (String) config.getOrDefault("statusLogWebhook", "");
 
             Object admins = config.getOrDefault("admins", new ArrayList<Long>());
             if (admins instanceof ArrayList && !((ArrayList) admins).isEmpty()) {
@@ -161,19 +161,6 @@ public class Config {
             } else {
                 log.error("No admins were specified!");
                 System.exit(1);
-            }
-
-            String officialGuild = (String) config.getOrDefault("officialGuild", "");
-            if (officialGuild.isEmpty()) {
-                log.error("You need to provide an official server!");
-                System.exit(1);
-            } else {
-                try {
-                    this.officialGuild = Long.parseLong(officialGuild);
-                } catch (NumberFormatException e) {
-                    log.error("Official guild is not valid!");
-                    System.exit(1);
-                }
             }
 
             numShards = (int) config.getOrDefault("numShards", -1);
@@ -255,34 +242,34 @@ public class Config {
     }
 
     public String getErrorLogWebhook() {
-        return errorLogChannel;
+        return errorLogWebhook;
     }
 
-    public String getImportantLogChannel() {
-        return importantLogChannel;
+    public String getImportantLogWebhook() {
+        return importantLogWebhook;
     }
 
-    public WebhookClient getImportantWebhook() {
-        if (importantLogChannel.isEmpty())
+    public WebhookClient getImportantLogWebhookClient() {
+        if (importantLogWebhook.isEmpty())
             return null;
         if (importantLogHook == null)
-            importantLogHook = new WebhookClientBuilder(importantLogChannel).build();
+            importantLogHook = new WebhookClientBuilder(importantLogWebhook).build();
         return importantLogHook;
     }
 
-    public WebhookClient getErrorWebhook() {
-        if (errorLogChannel.isEmpty())
+    public WebhookClient getErrorLogWebhookClient() {
+        if (errorLogWebhook.isEmpty())
             return null;
         if (errorLogHook == null)
-            errorLogHook = new WebhookClientBuilder(errorLogChannel).build();
+            errorLogHook = new WebhookClientBuilder(errorLogWebhook).build();
         return errorLogHook;
     }
 
-    public WebhookClient getStatusWebhook() {
-        if (statusLogChannel.isEmpty())
+    public WebhookClient getStatusLogWebhookClient() {
+        if (statusLogWebhook.isEmpty())
             return null;
         if (statusLogHook == null)
-            statusLogHook = new WebhookClientBuilder(statusLogChannel).build();
+            statusLogHook = new WebhookClientBuilder(statusLogWebhook).build();
         return statusLogHook;
     }
 
@@ -290,7 +277,4 @@ public class Config {
         return numShards;
     }
 
-    public long getOfficialGuild() {
-        return officialGuild;
-    }
 }
