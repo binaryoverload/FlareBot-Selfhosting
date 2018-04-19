@@ -26,7 +26,7 @@ import net.dv8tion.jda.webhook.WebhookClient;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import stream.flarebot.flarebot.commands.*;
-import stream.flarebot.flarebot.commands.music.*;
+import stream.flarebot.flarebot.commands.commands.music.*;
 import stream.flarebot.flarebot.database.RedisController;
 import stream.flarebot.flarebot.mod.modlog.ModlogEvent;
 import stream.flarebot.flarebot.mod.modlog.ModlogHandler;
@@ -68,7 +68,6 @@ public class Events extends ListenerAdapter {
 
     private final Logger LOGGER = FlareBot.getLog(this.getClass());
     private final Pattern multiSpace = Pattern.compile(" {2,}");
-    private final Pattern rip = Pattern.compile("\\brip( [a-zA-Z0-9]+)?\\b", Pattern.CASE_INSENSITIVE);
 
     private Map<String, Integer> spamMap = new ConcurrentHashMap<>();
 

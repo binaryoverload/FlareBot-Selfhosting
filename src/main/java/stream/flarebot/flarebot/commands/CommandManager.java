@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.util.ReflectionUtils;
+import sun.security.krb5.internal.crypto.dk.AesDkCrypto;
 
 import java.io.IOException;
 import java.util.List;

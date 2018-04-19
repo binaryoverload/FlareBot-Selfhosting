@@ -61,7 +61,6 @@ public class FlareBot {
 
     private long startTime;
     private Set<FutureAction> futureActions = Sets.newConcurrentHashSet();
-    private Events events;
     private CommandManager commandManager;
 
     public static void main(String[] args) {
@@ -168,10 +167,6 @@ public class FlareBot {
         return instance;
     }
 
-    public Events getEvents() {
-        return events;
-    }
-
     protected void run() {
         try {
             client.start();
@@ -182,7 +177,6 @@ public class FlareBot {
         }
 
         commandManager = new CommandManager();
-        client.registerListener((events = new Events()));
 
         RestAction.DEFAULT_FAILURE = GeneralUtils.getFailedRestActionHandler("Failed RestAction - {}",
                 ErrorResponse.UNKNOWN_MESSAGE);
@@ -215,7 +209,7 @@ public class FlareBot {
         new FlareBotTask("spam" + System.currentTimeMillis()) {
             @Override
             public void run() {
-                events.getSpamMap().clear();
+                Client.instance().getEvents().getSpamMap().clear();
             }
         }.repeat(TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(3));
 

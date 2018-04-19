@@ -41,6 +41,8 @@ public class Client {
 
     // Command - reason
     private Map<String, String> disabledCommands = new ConcurrentHashMap<>();
+    private Events events;
+
 
     Client() {
         instance = this;
@@ -67,7 +69,7 @@ public class Client {
                         "FlareBot to be ready.", e);
             }
         }
-        registerListener(new Events());
+        registerListener((events = new Events()));
         setGame();
 
         logger.info("FlareBot started!");
@@ -160,6 +162,10 @@ public class Client {
 
     public Map<String, String> getDisabledCommands() {
         return disabledCommands;
+    }
+
+    public Events getEvents() {
+        return events;
     }
 
 }

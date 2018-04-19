@@ -11,7 +11,7 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
 import stream.flarebot.flarebot.DataHandler;
 import stream.flarebot.flarebot.Getters;
-import stream.flarebot.flarebot.commands.music.*;
+import stream.flarebot.flarebot.commands.commands.music.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.FormatUtils;

@@ -362,8 +362,8 @@ public class ModlogEvents implements EventListener {
         AuditLogEntry entry = event.getGuild().getAuditLogs().type(ActionType.MESSAGE_DELETE).complete().get(0);
         if (entry.getUser().isBot()) return;
         User responsible = null;
-        if (FlareBot.instance().getEvents().getRemovedByMeList().contains(event.getMessageIdLong())) {
-            FlareBot.instance().getEvents().getRemovedByMeList().remove(event.getMessageIdLong());
+        if (Client.instance().getEvents().getRemovedByMeList().contains(event.getMessageIdLong())) {
+            Client.instance().getEvents().getRemovedByMeList().remove(event.getMessageIdLong());
             return;
         }
         if (!RedisController.exists(event.getMessageId())) return;

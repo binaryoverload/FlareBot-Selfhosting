@@ -52,7 +52,7 @@ public class ShardUtils {
      * @return The last event time of the provided shard ID.
      */
     public static long getLastEventTime(int shardId) {
-        return System.currentTimeMillis() - FlareBot.instance().getEvents().getShardEventTime().get(shardId);
+        return System.currentTimeMillis() - Client.instance().getEvents().getShardEventTime().get(shardId);
     }
 
     /**
