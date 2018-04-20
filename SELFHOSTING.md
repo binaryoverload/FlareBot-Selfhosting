@@ -7,6 +7,9 @@ To start with, you need to make sure you have these basic requirements:
  - Java 8 JRE and JDK
  - PostegreSQL v10 (Configured with a database for FlareBot's data. Usually called `flarebot`)
  - Git
+ 
+##### Disclaimer
+This guide assumes basic command-line experience and knowing how to run Java programs. If this is not you, then you shouldn't be doing this!
 
  ### FlareBot Installation
  - Run `git clone https://github.com/binaryoverload/FlareBot-Selfhosting.git` to clone the repository into a local folder.
