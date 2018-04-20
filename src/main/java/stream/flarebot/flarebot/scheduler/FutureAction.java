@@ -184,17 +184,36 @@ public class FutureAction {
         Scheduler.delayTask(this::execute, "FutureTask-" + action.name() + "-" + expires.toString(),
                 getExpires().minus(System.currentTimeMillis()).getMillis());
         DatabaseManager.run(connection -> {
-            PreparedStatement update = connection.prepareStatement("UPDATE future_tasks SET responsible = ?, " +
-                    "target = ?, content = ?, expires_at = ?, action = ? WHERE guild_id = ? AND channel_id = ? " +
-                    "AND created_at = ?");
-            update.setLong(1, responsible);
-            update.setLong(2, target);
-            update.setString(3, content);
-            update.setTimestamp(4, new Timestamp(expires.toDateTime().getMillis()));
-            update.setString(5, action.name());
-            update.setLong(6, guildId);
-            update.setLong(7, channelId);
-            update.setTimestamp(8, new Timestamp(created.toDateTime().getMillis()));
+            PreparedStatement query = connection.prepareStatement("SELECT * FROM future_tasks WHERE guild_id = ? AND channel_id = ? AND created_at = ?");
+            query.setLong(1, guildId);
+            query.setLong(2, channelId);
+            query.setTimestamp(3, new Timestamp(created.getMillis()));
+            if (query.executeQuery().isBeforeFirst()) {
+                PreparedStatement update = connection.prepareStatement("UPDATE future_tasks SET responsible = ?, " +
+                        "target = ?, content = ?, expires_at = ?, action = ? WHERE guild_id = ? AND channel_id = ? " +
+                        "AND created_at = ?");
+                update.setLong(1, responsible);
+                update.setLong(2, target);
+                update.setString(3, content);
+                update.setTimestamp(4, new Timestamp(expires.getMillis()));
+                update.setString(5, action.name());
+                update.setLong(6, guildId);
+                update.setLong(7, channelId);
+                update.setTimestamp(8, new Timestamp(created.getMillis()));
+                update.executeUpdate();
+            } else {
+                PreparedStatement insert = connection.prepareStatement("INSERT INTO future_tasks (guild_id, channel_id, responsible, target, content, expires_at, created_at, action) VALUES (?,? ,?, ?,? ,? ,?, ?)");
+                insert.setLong(1, guildId);
+                insert.setLong(2, channelId);
+                insert.setLong(3, responsible);
+                insert.setLong(4, target);
+                insert.setString(5, content);
+                insert.setTimestamp(6, new Timestamp(expires.getMillis()));
+                insert.setTimestamp(7, new Timestamp(created.getMillis()));
+                insert.setString(8, action.name());
+                insert.executeUpdate();
+            }
+
         });
         FlareBot.instance().getFutureActions().add(this);
     }
@@ -206,7 +225,7 @@ public class FutureAction {
                     "AND channel_id = ? AND created_at = ?");
             delete.setLong(1, guildId);
             delete.setLong(2, channelId);
-            delete.setTimestamp(3, new Timestamp(created.toDateTime().getMillis()));
+            delete.setTimestamp(3, new Timestamp(created.getMillis()));
             delete.execute();
         });
         Scheduler.cancelTask("FutureTask-" + action.name() + "-" + expires.toString());

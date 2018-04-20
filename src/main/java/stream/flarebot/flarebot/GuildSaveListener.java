@@ -14,8 +14,8 @@ public class GuildSaveListener implements RemovalListener<Long, GuildWrapper> {
     @Override
     public void onRemoval(@Nullable Long key, @Nullable GuildWrapper value, @Nonnull RemovalCause cause) {
         DatabaseManager.run(conn -> {
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO guilds (guild_id, guild_data) VALUES (?, ?) " +
-                    "ON CONFLICT (guild_id) DO UPDATE SET guild_data = ?");
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO guilds (guild_id, guild_data) VALUES (?, to_json(?::json)) " +
+                    "ON CONFLICT (guild_id) DO UPDATE SET guild_data = to_json(?::json)");
             ps.setLong(1, key);
             String json = DataHandler.gson.toJson(value);
             ps.setString(2, json);

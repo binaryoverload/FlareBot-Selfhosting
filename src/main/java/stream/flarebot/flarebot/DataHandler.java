@@ -80,7 +80,7 @@ public class DataHandler {
                     "WHERE playlist_name = ? AND guild_id = ?");
 
             savePlaylistStatement.setString(1, name);
-            savePlaylistStatement.setString(2, channel.getGuild().getId());
+            savePlaylistStatement.setLong(2, channel.getGuild().getIdLong());
             ResultSet set = savePlaylistStatement.executeQuery();
             if (set.isBeforeFirst()) {
                 if (ConfirmUtil.checkExists(ownerId, command.getClass())) {
@@ -95,12 +95,14 @@ public class DataHandler {
                 }
             }
             PreparedStatement insertPlaylistStatement = connection.prepareStatement("INSERT INTO playlists" +
-                        " (playlist_name, guild_id, owner, songs) VALUES (?, ?, ?, ?)");
+                        " (playlist_name, guild_id, owner, songs) VALUES (?, ?, ?, ?) ON CONFLICT (playlist_name, guild_id) DO UPDATE " +
+                    "SET songs = EXCLUDED.songs, owner = EXCLUDED.owner");
 
             insertPlaylistStatement.setString(1, name);
-            insertPlaylistStatement.setString(2, channel.getGuild().getId());
-            insertPlaylistStatement.setString(3, ownerId);
+            insertPlaylistStatement.setLong(2, channel.getGuild().getIdLong());
+            insertPlaylistStatement.setLong(3, Long.parseLong(ownerId));
             insertPlaylistStatement.setString(4, songs.toString());
+            insertPlaylistStatement.executeUpdate();
             channel.sendMessage(MessageUtils.getEmbed(Getters.getUserById(ownerId))
                     .setDescription("Successfully saved the playlist: " + MessageUtils.escapeMarkdown(name)).build()).queue();
         });
@@ -132,10 +134,14 @@ public class DataHandler {
             ResultSet set = connection.prepareCall("SELECT * FROM future_tasks").executeQuery();
             while (set.next()) {
                 FutureAction fa =
-                        new FutureAction(set.getLong("guild_id"), set.getLong("channel_id"), set.getLong("responsible"),
-                                set.getLong("target"), set.getString("content"), new DateTime(set.getTimestamp("expires_at")),
+                        new FutureAction(set.getLong("guild_id"), set.getLong("channel_id"),
+                                set.getLong("responsible"),
+                                set.getLong("target"),
+                                set.getString("content"),
+                                new DateTime(set.getTimestamp("expires_at")),
                                 new DateTime(set.getTimestamp("created_at")),
-                                FutureAction.Action.valueOf(set.getString("action").toUpperCase()));
+                                FutureAction.Action.valueOf(set.getString("action").toUpperCase())
+                        );
 
                 try {
                     if (new DateTime().isAfter(fa.getExpires()))
