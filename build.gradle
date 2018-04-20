@@ -3,7 +3,7 @@ plugins {
     id 'idea'
     id 'application'
     id 'com.sedmelluq.jdaction' version '1.0.1'
-    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id 'com.github.johnrengelman.shadow' version '2.0.3'
 }
 
 group = 'stream.flarebot.flarebot'
@@ -13,8 +13,6 @@ description = "Cool Java music bot"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-mainClassName = "stream.flarebot.flarebot.FlareBot"
 
 repositories {
 
@@ -66,3 +64,10 @@ dependencies {
 }
 
 compileJava.options.encoding = 'UTF-8'
+
+shadowJar {
+    baseName = 'FlareBot'
+    classifier = null
+    version = null
+    mainClassName = "stream.flarebot.flarebot.FlareBot"
+}
