@@ -3,6 +3,7 @@ package stream.flarebot.flarebot.commands;
 import net.dv8tion.jda.core.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stream.flarebot.flarebot.permissions.PerGuildPermissions;
 import stream.flarebot.flarebot.util.ReflectionUtils;
 import sun.security.krb5.internal.crypto.dk.AesDkCrypto;
 
@@ -38,16 +39,16 @@ public class CommandManager {
     // https://bots.are-pretty.sexy/214501.png
     // New way to process commands, this way has been proven to be quicker overall.
     public Command getCommand(String s, User user) {
-        /*if (PerGuildPermissions.isAdmin(user) || (FlareBot.instance().isTestBot() && PerGuildPermissions.isContributor(user))) {
+        if (PerGuildPermissions.isAdmin(user)) {
             for (Command cmd : getCommandsByType(CommandType.SECRET)) {
                 if (cmd.getCommand().equalsIgnoreCase(s))
                     return cmd;
                 for (String alias : cmd.getAliases())
                     if (alias.equalsIgnoreCase(s)) return cmd;
             }
-        }*/
+        }
         for (Command cmd : getCommands()) {
-            //if (cmd.getType() == CommandType.SECRET) continue;
+            if (cmd.getType() == CommandType.SECRET) continue;
             if (cmd.getCommand().equalsIgnoreCase(s))
                 return cmd;
             for (String alias : cmd.getAliases())

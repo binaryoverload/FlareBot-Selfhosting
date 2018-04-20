@@ -190,11 +190,11 @@ public class FutureAction {
             update.setLong(1, responsible);
             update.setLong(2, target);
             update.setString(3, content);
-            update.setTimestamp(4, (Timestamp) expires.toDate());
+            update.setTimestamp(4, new Timestamp(expires.toDateTime().getMillis()));
             update.setString(5, action.name());
             update.setLong(6, guildId);
             update.setLong(7, channelId);
-            update.setTimestamp(8, (Timestamp) created.toDate());
+            update.setTimestamp(8, new Timestamp(created.toDateTime().getMillis()));
         });
         FlareBot.instance().getFutureActions().add(this);
     }
@@ -206,7 +206,7 @@ public class FutureAction {
                     "AND channel_id = ? AND created_at = ?");
             delete.setLong(1, guildId);
             delete.setLong(2, channelId);
-            delete.setTimestamp(3, (Timestamp) created.toDate());
+            delete.setTimestamp(3, new Timestamp(created.toDateTime().getMillis()));
             delete.execute();
         });
         Scheduler.cancelTask("FutureTask-" + action.name() + "-" + expires.toString());

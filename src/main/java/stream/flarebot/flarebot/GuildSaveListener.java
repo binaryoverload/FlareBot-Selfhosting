@@ -15,9 +15,11 @@ public class GuildSaveListener implements RemovalListener<Long, GuildWrapper> {
     public void onRemoval(@Nullable Long key, @Nullable GuildWrapper value, @Nonnull RemovalCause cause) {
         DatabaseManager.run(conn -> {
             PreparedStatement ps = conn.prepareStatement("INSERT INTO guilds (guild_id, guild_data) VALUES (?, ?) " +
-                    "ON CONFLICT (guild_id) DO UPDATE SET guild_data = VALUES(guild_data)");
+                    "ON CONFLICT (guild_id) DO UPDATE SET guild_data = ?");
             ps.setLong(1, key);
-            ps.setString(2, DataHandler.gson.toJson(value));
+            String json = DataHandler.gson.toJson(value);
+            ps.setString(2, json);
+            ps.setString(3, json);
             ps.executeUpdate();
         });
     }

@@ -15,6 +15,7 @@ import net.dv8tion.jda.core.utils.SessionControllerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.audio.PlayerListener;
+import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.music.QueueListener;
 import stream.flarebot.flarebot.scheduler.Scheduler;
 
@@ -76,6 +77,7 @@ public class Client {
     }
 
     protected void stop() {
+        DataHandler.getGuilds().invalidateAll();
         for (ScheduledFuture<?> scheduledFuture : Scheduler.getTasks().values())
             scheduledFuture.cancel(false);
         shardManager.removeEventListener(listeners.toArray(new Object[]{}));
