@@ -112,23 +112,25 @@ public class MessageUtils {
     }
 
     public static String paste(String trace) {
-        try {
-            Response response = WebUtils.request(new Request.Builder().url("https://hastebin.com/documents")
-                    .post(RequestBody.create(WebUtils.APPLICATION_JSON, trace)));
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-            ResponseBody body = response.body();
-            if (body != null) {
-                String key = new JSONObject(body.string()).getString("key");
-                body.close();
-                return "https://paste.flarebot.stream/" + key;
-            } else {
-                FlareBot.LOGGER.error("Local instance of hastebin is down");
-                return null;
-            }
-        } catch (IOException | JSONException e) {
-            FlareBot.LOGGER.error("Could not make POST request to paste!", e);
-            return null;
-        }
+//        try {
+//            Response response = WebUtils.request(new Request.Builder().url("http://hastebin.com/documents")
+//                    .header("User-Agent", "Mozilla/5.0 FlareBot")
+//                    .post(RequestBody.create(null, trace)));
+//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+//            ResponseBody body = response.body();
+//            if (body != null) {
+//                String key = new JSONObject(body.string()).getString("key");
+//                body.close();
+//                return "https://hastebin.com/" + key;
+//            } else {
+//                FlareBot.LOGGER.error("Local instance of hastebin is down");
+//                return null;
+//            }
+//        } catch (IOException | JSONException e) {
+//            FlareBot.LOGGER.error("Could not make POST request to paste!", e);
+//            return null;
+//        }
+        return "Paste server disabled for now :D";
     }
 
     public static void editMessage(Message message, String content) {
