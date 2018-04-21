@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id 'java'
     id 'idea'
@@ -65,10 +67,20 @@ dependencies {
 }
 
 compileJava.options.encoding = 'UTF-8'
+compileJava.dependsOn(processResources)
 
 shadowJar {
     baseName = 'FlareBot'
     classifier = null
     version = null
     mainClassName = "stream.flarebot.flarebot.FlareBot"
+}
+
+processResources {
+    //inject values into version.properties
+    filesMatching("**/version.properties") {
+        filter ReplaceTokens, tokens: [
+                "project.version"   : project.version
+        ]
+    }
 }
