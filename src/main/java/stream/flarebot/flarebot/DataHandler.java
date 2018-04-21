@@ -117,7 +117,7 @@ public class DataHandler {
             savePlaylistStatement.setString(1, name);
             savePlaylistStatement.setLong(2, channel.getGuild().getIdLong());
             ResultSet set = savePlaylistStatement.executeQuery();
-            if (!set.isBeforeFirst()) {
+            if (set.isBeforeFirst()) {
                 String songs = set.getString("songs");
                 songs = songs.substring(1, songs.length() - 1);
                 list.get().addAll(Arrays.asList(songs.split(", ")));
