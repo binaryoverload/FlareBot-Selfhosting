@@ -63,7 +63,8 @@ public class DataHandler {
             ps.setLong(1, guildId);
             ResultSet set = ps.executeQuery();
 
-            if (set.isFirst()) {
+            if (set.isBeforeFirst()) {
+                set.next();
                 data.set(gson.fromJson(set.getString("guid_data"), GuildWrapper.class));
             } else {
                 data.set(new GuildWrapper(guildId));
@@ -118,6 +119,7 @@ public class DataHandler {
             savePlaylistStatement.setLong(2, channel.getGuild().getIdLong());
             ResultSet set = savePlaylistStatement.executeQuery();
             if (set.isBeforeFirst()) {
+                set.next();
                 String songs = set.getString("songs");
                 songs = songs.substring(1, songs.length() - 1);
                 list.get().addAll(Arrays.asList(songs.split(", ")));
