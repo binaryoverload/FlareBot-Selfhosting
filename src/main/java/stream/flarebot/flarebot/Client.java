@@ -104,10 +104,10 @@ public class Client {
     }
 
     private void setGame() {
-        setGame(shard -> Game.playing(Config.INS.getPresence()
+        setGame(shard -> Game.streaming(Config.INS.getPresence()
                 .replace("{shard.id}", String.valueOf(shard))
-                .replace("{shard.total}", String.valueOf(shardManager.getShardsTotal()))
-        ));
+                .replace("{shard.total}", String.valueOf(shardManager.getShardsTotal())), "https://www.twitch.tv/discordflarebot"))
+        ;
     }
 
     private void setGame(IntFunction<Game> game) {
