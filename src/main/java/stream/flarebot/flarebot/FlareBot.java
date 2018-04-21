@@ -51,8 +51,6 @@ public class FlareBot {
     private Client client;
 
     static {
-        handleLogArchive("latest.log");
-        handleLogArchive("debug-latest.log");
         LOGGERS = new ConcurrentHashMap<>();
         LOGGER = getLog(FlareBot.class.getName());
     }
@@ -103,40 +101,6 @@ public class FlareBot {
 
     public static Logger getLog(Class<?> clazz) {
         return getLog(clazz.getName());
-    }
-
-    private static void handleLogArchive(String file) {
-        try {
-            byte[] buffer = new byte[1024];
-            String time = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(new Date());
-
-            File dir = new File("logs");
-            if (!dir.exists() && !dir.mkdir())
-                LOGGER.error("Failed to create directory for latest log!");
-            File f = new File(dir, file + "@" + time + ".zip");
-            File latestLog = new File(file);
-
-            FileOutputStream fos = new FileOutputStream(f);
-            ZipOutputStream zos = new ZipOutputStream(fos);
-            ZipEntry entry = new ZipEntry(latestLog.getName());
-            zos.putNextEntry(entry);
-            FileInputStream in = new FileInputStream(latestLog);
-
-            int len;
-            while ((len = in.read(buffer)) > 0)
-                zos.write(buffer, 0, len);
-
-            in.close();
-            zos.closeEntry();
-            zos.close();
-            fos.close();
-
-            if (!latestLog.delete()) {
-                throw new IllegalStateException("Failed to delete the old log file!");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static String getVersion() {
