@@ -115,7 +115,7 @@ public class DataHandler {
                     "WHERE playlist_name = ? AND guild_id = ?");
 
             savePlaylistStatement.setString(1, name);
-            savePlaylistStatement.setString(2, channel.getGuild().getId());
+            savePlaylistStatement.setLong(2, channel.getGuild().getIdLong());
             ResultSet set = savePlaylistStatement.executeQuery();
             if (!set.isBeforeFirst()) {
                 String songs = set.getString("songs");
