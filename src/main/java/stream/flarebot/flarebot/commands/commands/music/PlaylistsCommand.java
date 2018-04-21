@@ -21,27 +21,23 @@ public class PlaylistsCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        if (args.length >= 1) {
-            channel.sendTyping().complete();
-            DatabaseManager.run(connection -> {
-                PreparedStatement select = connection.prepareStatement("SELECT playlist_name FROM playlists WHERE guild_id=?");
-                select.setLong(1, channel.getGuild().getIdLong());
-                ResultSet resultSet = select.executeQuery();
-                List<String> songs = new ArrayList<>();
+        channel.sendTyping().complete();
+        DatabaseManager.run(connection -> {
+            PreparedStatement select = connection.prepareStatement("SELECT playlist_name FROM playlists WHERE guild_id=?");
+            select.setLong(1, channel.getGuild().getIdLong());
+            ResultSet resultSet = select.executeQuery();
+            List<String> songs = new ArrayList<>();
 
-                while (resultSet.next() && songs.size() >= 25) {
-                    songs.add(resultSet.getString("playlist_name"));
-                }
+            while (resultSet.next() && songs.size() <= 25) {
+                songs.add(resultSet.getString("playlist_name"));
+            }
 
-                String playlists = songs.stream().collect(Collectors.joining("\n"));
+            String playlists = songs.stream().collect(Collectors.joining("\n"));
 
-                EmbedBuilder builder = MessageUtils.getEmbed(sender);
-                for (String s : songs) {
-                    builder.addField("", playlists.isEmpty() ? "**No playlists!**" : playlists, false);
-                }
-                channel.sendMessage(builder.build()).queue();
-            });
-        }
+            EmbedBuilder builder = MessageUtils.getEmbed(sender);
+            builder.addField("Playlists", playlists.isEmpty() ? "**No playlists!**" : playlists, false);
+            channel.sendMessage(builder.build()).queue();
+        });
     }
 
     @Override
