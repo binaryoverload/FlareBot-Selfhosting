@@ -64,7 +64,7 @@ public class DataHandler {
             ResultSet set = ps.executeQuery();
 
             if (set.isBeforeFirst() && set.next()) {
-                data.set(gson.fromJson(set.getString("guild_data"), GuildWrapper.class));
+                data.set(gson.fromJson(set.getString("guid_data"), GuildWrapper.class));
             } else {
                 data.set(new GuildWrapper(guildId));
             }
