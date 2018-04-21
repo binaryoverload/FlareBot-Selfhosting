@@ -11,6 +11,7 @@ import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
+import stream.flarebot.flarebot.util.general.GuildUtils;
 import stream.flarebot.flarebot.util.general.VariableUtils;
 
 import java.awt.Color;
@@ -67,10 +68,11 @@ public class TagsCommand implements Command {
                     MessageUtils.sendErrorMessage("This tag doesn't exist!", channel);
                 }
             } else {
-                if (guild.getTags().containsKey(args[0].toLowerCase()))
-                    sendTag(guild, args[0].toLowerCase(), sender, channel,
+                if (guild.getTags().containsKey(args[0].toLowerCase())) {
+                    User target = GuildUtils.getUser(args[1], channel.getGuild().getId());
+                    sendTag(guild, args[0].toLowerCase(), target == null ? sender : target, channel,
                             Arrays.copyOfRange(args, 1, args.length));
-                else
+                } else
                     MessageUtils.sendErrorMessage("This tag doesn't exist!", channel);
             }
         } else {
@@ -101,10 +103,11 @@ public class TagsCommand implements Command {
                 MessageUtils.sendSuccessMessage("You successfully edited the tag `" + args[1] + "`!", channel,
                         sender);
             } else {
-                if (guild.getTags().containsKey(args[0].toLowerCase()))
-                    sendTag(guild, args[0].toLowerCase(), sender, channel,
+                if (guild.getTags().containsKey(args[0].toLowerCase())) {
+                    User target = GuildUtils.getUser(args[1], channel.getGuild().getId());
+                    sendTag(guild, args[0].toLowerCase(), target == null ? sender : target, channel,
                             Arrays.copyOfRange(args, 1, args.length));
-                else
+                } else
                     MessageUtils.sendErrorMessage("This tag doesn't exist!", channel);
             }
         }
