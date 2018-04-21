@@ -115,23 +115,23 @@ public class Config {
 
             Object db = config.get("database");
             if (db instanceof Map) {
-                Map<String, String> details = (Map<String, String>) db;
+                Map<String, Object> details = (Map<String, Object>) db;
 
                 if (details.containsKey("username") && details.containsKey("password")) {
-                    databaseUsername = details.get("username");
-                    databasePassword = details.get("password");
+                    databaseUsername = (String) details.get("username");
+                    databasePassword = (String) details.get("password");
                 } else {
                     log.error("You need to supply postgresql username and password!");
                     System.exit(1);
                 }
 
-                databaseHost = details.getOrDefault("host", "localhost");
+                databaseHost = (String) details.getOrDefault("host", "localhost");
                 try {
-                    databasePort = Integer.parseInt(details.getOrDefault("port", "5432"));
+                    databasePort = (int) details.getOrDefault("port", 5432);
                 } catch (NumberFormatException e) {
                     databasePort = 5432;
                 }
-                databaseName = details.getOrDefault("name", "flarebot");
+                databaseName = (String) details.getOrDefault("name", "flarebot");
 
                 log.info(String.format("Using Host: %s Port: %d Name: %s for PostegreSQL", databaseHost, databasePort, databaseName));
             } else {
@@ -166,9 +166,11 @@ public class Config {
             numShards = (int) config.getOrDefault("numShards", -1);
         } catch (IOException e) {
             log.error("Unexpected error loading config file!", e);
+            System.exit(2);
         } catch (YAMLException | ClassCastException e) {
             log.error("Could not parse the config file, this is likely due to it being malformed!" +
                     "Check the file on an online YAML validator.", e);
+            System.exit(2);
         }
     }
 

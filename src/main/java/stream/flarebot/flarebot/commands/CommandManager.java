@@ -1,12 +1,11 @@
 package stream.flarebot.flarebot.commands;
 
 import net.dv8tion.jda.core.entities.User;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
-import stream.flarebot.flarebot.util.ReflectionUtils;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -24,12 +23,11 @@ public class CommandManager {
 
         long start = System.currentTimeMillis();
         try {
-            for (Class<?> c : ReflectionUtils.getClasses("stream.flarebot.flarebot.commands.commands")) {
-                if (Command.class.isAssignableFrom(c))
-                    commands.add((Command) c.newInstance());
+            for (Class<?> c : new Reflections("stream.flarebot.flarebot.commands.commands").getSubTypesOf(Command.class)) {
+                commands.add((Command) c.newInstance());
             }
             logger.info("Loaded {} commands in {}ms.", commands.size(), (System.currentTimeMillis() - start));
-        } catch (ClassNotFoundException | IOException | IllegalAccessException | InstantiationException e) {
+        } catch (IllegalAccessException | InstantiationException e) {
             logger.error("Could not load commands!", e);
             System.exit(1);
         }
