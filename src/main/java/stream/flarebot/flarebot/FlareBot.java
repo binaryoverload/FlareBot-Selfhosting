@@ -15,18 +15,12 @@ import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.objects.PlayerCache;
 import stream.flarebot.flarebot.scheduler.FlareBotTask;
 import stream.flarebot.flarebot.scheduler.FutureAction;
-import stream.flarebot.flarebot.tasks.VoiceChannelCleanup;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.ShardUtils;
 import stream.flarebot.flarebot.util.general.GeneralUtils;
 
 import javax.security.auth.login.LoginException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -34,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class FlareBot {
 
@@ -210,8 +202,6 @@ public class FlareBot {
                 }
             }
         }.repeat(TimeUnit.MINUTES.toMillis(10), TimeUnit.MINUTES.toMillis(5));
-
-        new VoiceChannelCleanup("VoiceChannelCleanup");
     }
 
     public static CommandManager getCommandManager() {
