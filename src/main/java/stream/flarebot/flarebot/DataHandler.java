@@ -42,7 +42,7 @@ public class DataHandler {
         DatabaseManager.run(conn -> {
             conn.prepareCall("CREATE TABLE IF NOT EXISTS guilds (guild_id BIGINT, guild_data JSON, PRIMARY KEY (guild_id))").execute();
             conn.prepareCall("CREATE TABLE IF NOT EXISTS playlists (playlist_name TEXT, guild_id BIGINT, owner BIGINT, songs TEXT, PRIMARY KEY (playlist_name, guild_id))").execute();
-            conn.prepareCall("CREATE TABLE IF NOT EXISTS future_tasks (guild_id BIGINT, channel_id BIGINT, responsible BIGINT, content TEXT, expires_at TIMESTAMP, created_at TIMESTAMP, action TEXT)").execute();
+            conn.prepareCall("CREATE TABLE IF NOT EXISTS future_tasks (guild_id BIGINT, channel_id BIGINT, responsible BIGINT, target BIGINT, content TEXT, expires_at TIMESTAMP, created_at TIMESTAMP, action TEXT)").execute();
         });
         loadFutureTasks();
     }
