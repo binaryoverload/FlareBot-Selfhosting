@@ -35,7 +35,6 @@ public class FlareBot {
     public static final Gson GSON = new GsonBuilder().create();
     public static final AtomicBoolean EXITING = new AtomicBoolean(false);
     public static final AtomicBoolean UPDATING = new AtomicBoolean(false);
-    public static final AtomicBoolean NOVOICE_UPDATING = new AtomicBoolean(false);
     private static final Map<String, Logger> LOGGERS;
     private static FlareBot instance;
     private static String version = null;
@@ -83,8 +82,6 @@ public class FlareBot {
         message.addProperty("message", s);
         message.addProperty("exception", GeneralUtils.getStackTrace(e));
         MessageUtils.sendErrorMessage(s, channel);
-        //String id = instance.postToApi("postReport", "error", message);
-        //MessageUtils.sendErrorMessage(s + "\nThe error has been reported! You can follow the report on the website, https://flarebot.stream/report?id=" + id, channel);
     }
 
     private static Logger getLog(String name) {
@@ -177,11 +174,7 @@ public class FlareBot {
                     cancel();
                     return;
                 }
-                if (Getters.getShards().size() == 1) {
-                    LOGGER.warn("Single sharded bot, the DeadShard-Checker has been disabled!");
-                    cancel();
-                    return;
-                }
+
                 // 10 mins without an event... this son bitch is dead.
                 if (Getters.getShards().stream().anyMatch(shard -> ShardUtils.isDead(shard, TimeUnit.MINUTES.toMillis(10)))) {
                     Getters.getShards().stream().filter(shard -> ShardUtils.isDead(shard, TimeUnit.MINUTES.toMillis(10)))
