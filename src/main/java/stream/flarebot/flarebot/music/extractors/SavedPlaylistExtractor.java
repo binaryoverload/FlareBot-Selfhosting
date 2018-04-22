@@ -35,7 +35,7 @@ public class SavedPlaylistExtractor implements Extractor {
             } catch (Exception e) {
                 continue;
             }
-            if (!doc.title().endsWith("YouTube") || doc.title().equals("YouTube")) {
+            if (!doc.title().contains("YouTube")) {
                 continue;
             }
             try {
