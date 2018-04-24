@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.commands.*;
+import stream.flarebot.flarebot.commands.commands.music.SongCommand;
 import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.objects.PlayerCache;
 import stream.flarebot.flarebot.scheduler.FlareBotTask;
@@ -163,6 +164,7 @@ public class FlareBot {
             @Override
             public void run() {
                 Client.instance().getEvents().getSpamMap().clear();
+                SongCommand.updateMessages();
             }
         }.repeat(TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(3));
 

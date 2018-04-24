@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.FlareBot;
+import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.music.extractors.YouTubeExtractor;
@@ -21,7 +22,14 @@ import stream.flarebot.flarebot.util.general.FormatUtils;
 import stream.flarebot.flarebot.util.general.GeneralUtils;
 import stream.flarebot.flarebot.util.objects.ButtonGroup;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class SongCommand implements Command {
+
+
+    private static final Map<Long, Long> songMessages = new ConcurrentHashMap<>();
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
@@ -67,7 +75,8 @@ public class SongCommand implements Command {
             buttonGroup.addButton(new ButtonGroup.Button("\uD83D\uDD01", (ownerID, user, message1) -> {
                 updateSongMessage(user, message1, message1.getTextChannel());
             }));
-            ButtonUtil.sendButtonedMessage(channel, eb.build(), buttonGroup);
+            Message message1 = ButtonUtil.sendReturnedButtonedMessage(channel, eb.build(), buttonGroup);
+            songMessages.put(channel.getIdLong(), message1.getIdLong());
         } else {
             channel.sendMessage(MessageUtils.getEmbed(sender)
                     .addField("Current song", "**No song playing right now!**", false)
@@ -125,6 +134,19 @@ public class SongCommand implements Command {
                     .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(track.getTrack().getPosition()),
                             FormatUtils.formatDuration(track.getTrack().getDuration())), false);
         message.editMessage(eb.build()).queue();
+    }
+
+    public static void updateMessages() {
+        for (Map.Entry<Long, Long> pair : songMessages.entrySet()) {
+            TextChannel channel = Getters.getChannelById(pair.getKey());
+            if (channel == null) {
+                songMessages.remove(pair.getKey());
+                break;
+            }
+            channel.getMessageById(pair.getValue()).queue(message -> {
+                updateSongMessage(Client.instance().getSelfUser(), message, channel);
+            });
+        }
     }
 
 }
