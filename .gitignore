@@ -23,3 +23,5 @@ out/
 # Gradle can use hashes
 .gradle
 **/build/
+
+gradle
