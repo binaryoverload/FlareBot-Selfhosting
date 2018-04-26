@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.PlayerManager;
+import com.arsenarsen.lavaplayerbridge.player.Player;
 import com.arsenarsen.lavaplayerbridge.player.Track;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
@@ -143,9 +144,15 @@ public class SongCommand implements Command {
                 songMessages.remove(pair.getKey());
                 break;
             }
-            channel.getMessageById(pair.getValue()).queue(message -> {
-                updateSongMessage(Client.instance().getSelfUser(), message, channel);
-            });
+            Player player = Client.instance().getMusicManager().getPlayer(channel.getGuild().getId());
+            Track track = player.getPlayingTrack();
+            if (track != null) {
+                if(!player.getPaused()) {
+                    channel.getMessageById(pair.getValue()).queue(message -> {
+                        updateSongMessage(Client.instance().getSelfUser(), message, channel);
+                    });
+                }
+            }
         }
     }
 
