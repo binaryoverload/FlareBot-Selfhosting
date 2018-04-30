@@ -37,7 +37,7 @@ presence: 'Walshy is cool'
 # Redis is used for caching messages so that the modlog can log them on edit and remove.
 # Without Redis message edits and deletes will not be logged.
 #redisHost: 'localhost'
-#redisPort: '6379'
+#redisPort: 6379
 #redisPassword: 'password'
 
 errorLogWebhook: ''
