@@ -16,6 +16,7 @@ import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.music.extractors.YouTubeExtractor;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
+import stream.flarebot.flarebot.scheduler.Scheduler;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.buttons.ButtonUtil;
 import stream.flarebot.flarebot.util.buttons.ButtonGroupConstants;
@@ -26,6 +27,7 @@ import stream.flarebot.flarebot.util.objects.ButtonGroup;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 public class SongCommand implements Command {
 

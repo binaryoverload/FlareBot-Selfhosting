@@ -5,6 +5,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
 
 import java.io.IOException;
@@ -18,16 +19,13 @@ public class RedisController {
 
     public static BlockingQueue<RedisSetData> setQueue = new LinkedBlockingQueue<>();
 
-    private RedisController() {
-    }
-
-    public RedisController(JSONConfig config) {
+    public RedisController() {
         jedisPool = new JedisPool(
                 new JedisPoolConfig(),
-                config.getString("redis.host").get(),
-                Integer.parseInt(config.getString("redis.port").get()),
+                Config.INS.getRedisHost(),
+                Config.INS.getRedisPort(),
                 3000,
-                config.getString("redis.password").get().isEmpty() ? null : config.getString("redis.password").get());
+                Config.INS.getRedisPassword());
         try (Jedis jedis = jedisPool.getResource()) {
             String response = jedis.ping();
             if (!("PONG".equals(response))) throw new IOException("Ping to server failed!");

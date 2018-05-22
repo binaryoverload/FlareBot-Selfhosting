@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.audio.PlayerListener;
 import stream.flarebot.flarebot.database.DatabaseManager;
+import stream.flarebot.flarebot.database.RedisController;
 import stream.flarebot.flarebot.music.QueueListener;
 import stream.flarebot.flarebot.scheduler.Scheduler;
 
@@ -71,7 +72,10 @@ public class Client {
             }
         }
         registerListener((events = new Events()));
+        registerListener(new ModlogEvents());
         setGame();
+
+        new RedisController();
 
         logger.info("FlareBot started!");
     }
