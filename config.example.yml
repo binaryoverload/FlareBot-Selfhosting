@@ -44,6 +44,9 @@ errorLogWebhook: ''
 importantLogWebhook: ''
 statusLogWebhook: ''
 
+# This points to a haste server where to store errors
+hasteServer: 'hastebin.com'
+
 # The number of shards the bot should use, LEAVE THIS AT -1 IF YOU DO NOT KNOW HOW TO HANDLE SHARDS.
 numShards: -1
 

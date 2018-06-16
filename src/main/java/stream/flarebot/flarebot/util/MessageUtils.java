@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import stream.flarebot.flarebot.Client;
+import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.Getters;
 import stream.flarebot.flarebot.commands.Command;
@@ -112,25 +113,28 @@ public class MessageUtils {
     }
 
     public static String paste(String trace) {
-//        try {
-//            Response response = WebUtils.request(new Request.Builder().url("http://hastebin.com/documents")
-//                    .header("User-Agent", "Mozilla/5.0 FlareBot")
-//                    .post(RequestBody.create(null, trace)));
-//            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-//            ResponseBody body = response.body();
-//            if (body != null) {
-//                String key = new JSONObject(body.string()).getString("key");
-//                body.close();
-//                return "https://hastebin.com/" + key;
-//            } else {
-//                FlareBot.LOGGER.error("Local instance of hastebin is down");
-//                return null;
-//            }
-//        } catch (IOException | JSONException e) {
-//            FlareBot.LOGGER.error("Could not make POST request to paste!", e);
-//            return null;
-//        }
-        return "Paste server disabled for now :D";
+        if (Config.INS.getHasteServer() != null) {
+            try {
+                Response response = WebUtils.request(new Request.Builder().url(Config.INS.getHasteServer() + "/documents")
+                        .header("User-Agent", "Mozilla/5.0 FlareBot")
+                        .post(RequestBody.create(null, trace)));
+                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                ResponseBody body = response.body();
+                if (body != null) {
+                    String key = new JSONObject(body.string()).getString("key");
+                    body.close();
+                    return "https://hastebin.com/" + key;
+                } else {
+                    FlareBot.LOGGER.error("Local instance of hastebin is down");
+                    return null;
+                }
+            } catch (IOException | JSONException e) {
+                FlareBot.LOGGER.error("Could not make POST request to paste!", e);
+                return null;
+            }
+        } else {
+            return "Paste server disabled for now :D";
+        }
     }
 
     public static void editMessage(Message message, String content) {

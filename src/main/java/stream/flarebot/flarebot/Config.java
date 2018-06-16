@@ -76,6 +76,7 @@ public class Config {
     private WebhookClient importantLogHook;
     private String statusLogWebhook;
     private WebhookClient statusLogHook;
+    private String hasteServer;
 
     private ArrayList<Long> admins;
 
@@ -153,6 +154,7 @@ public class Config {
             errorLogWebhook = (String) config.getOrDefault("errorLogWebhook", "");
             importantLogWebhook = (String) config.getOrDefault("importantLogWebhook", "");
             statusLogWebhook = (String) config.getOrDefault("statusLogWebhook", "");
+            hasteServer = (String) config.getOrDefault("hasteServer", null);
 
             Object admins = config.getOrDefault("admins", new ArrayList<Long>());
             if (admins instanceof ArrayList && !((ArrayList) admins).isEmpty()) {
@@ -273,6 +275,10 @@ public class Config {
         if (statusLogHook == null)
             statusLogHook = new WebhookClientBuilder(statusLogWebhook).build();
         return statusLogHook;
+    }
+
+    public String getHasteServer() {
+        return hasteServer;
     }
 
     public int getNumShards() {
