@@ -50,11 +50,13 @@ public class ModlogCommand implements Command {
 
                 for (ModlogAction modlogAction : events) {
                     if (guild.getModeration().isEventEnabled(guild, modlogAction.getEvent())) {
-                        List<String> part = new ArrayList<>();
-                        part.add(modlogAction.getEvent().getName());
-                        part.add(String.valueOf(modlogAction.isCompacted()));
-                        part.add(modlogAction.getModlogChannel(guild.getGuild()).getName());
-                        tb.addRow(part);
+                        if(modlogAction.getEvent() != null) {
+                            List<String> part = new ArrayList<>();
+                            part.add(modlogAction.getEvent().getName());
+                            part.add(String.valueOf(modlogAction.isCompacted()));
+                            part.add(modlogAction.getModlogChannel(guild.getGuild()).getName());
+                            tb.addRow(part);
+                        }
                     }
                 }
                 PaginationUtil.sendPagedMessage(channel, tb.build(), page - 1, sender, ButtonGroupConstants.MODLOG_LIST);

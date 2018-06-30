@@ -359,6 +359,8 @@ public class ModlogEvents implements EventListener {
 
     private void onMessageDelete(MessageDeleteEvent event, @Nonnull GuildWrapper wrapper) {
         if (cannotHandle(wrapper, ModlogEvent.MESSAGE_DELETE)) return;
+        List<AuditLogEntry> entryLiat = event.getGuild().getAuditLogs().type(ActionType.MESSAGE_DELETE).complete();
+        if (entryLiat.size() == 0) return;
         AuditLogEntry entry = event.getGuild().getAuditLogs().type(ActionType.MESSAGE_DELETE).complete().get(0);
         if (entry.getUser().isBot()) return;
         User responsible = null;
