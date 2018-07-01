@@ -6,12 +6,12 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.commands.*;
 import stream.flarebot.flarebot.music.VideoThread;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
-import stream.flarebot.flarebot.util.general.GuildUtils;
 
 import java.awt.Color;
 import java.time.LocalDateTime;
@@ -28,17 +28,13 @@ public class PlayCommand implements Command {
                 }
             }
             if (member.getVoiceState().inVoiceChannel()) {
-                if (channel.getGuild().getAudioManager().isAttemptingToConnect()) {
-                    MessageUtils.sendErrorMessage("Currently connecting to a voice channel! Try again soon!", channel);
-                    return;
-                }
                 if (channel.getGuild().getSelfMember().getVoiceState().inVoiceChannel() &&
                         !(channel.getGuild().getSelfMember().getVoiceState().getAudioChannel().getId()
                                 .equals(member.getVoiceState().getAudioChannel().getId()))) {
                     MessageUtils.sendErrorMessage("I cannot join your channel! I am already in a channel!", channel);
                     return;
                 }
-                GuildUtils.joinChannel(channel, member);
+                Client.instance().getLink(guild.getGuildId()).connect(member.getVoiceState().getChannel());
             }
             if (args[0].startsWith("http") || args[0].startsWith("www.")) {
                 VideoThread.getThread(args[0], channel, sender).start();

@@ -5,6 +5,7 @@ import com.arsenarsen.lavaplayerbridge.libraries.LibraryFactory;
 import com.arsenarsen.lavaplayerbridge.libraries.UnknownBindingException;
 import com.arsenarsen.lavaplayerbridge.utils.JDAMultiShard;
 import lavalink.client.io.Lavalink;
+import lavalink.client.io.Link;
 import lavalink.client.player.IPlayer;
 import lavalink.client.player.LavaplayerPlayerWrapper;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
@@ -206,4 +207,7 @@ public class Client {
         return events;
     }
 
+    public Link getLink(String guildId) {
+        return lavalink.getLink(guildId);
+    }
 }
