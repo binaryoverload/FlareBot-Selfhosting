@@ -5,6 +5,7 @@ import com.arsenarsen.lavaplayerbridge.player.Track;
 import com.google.gson.JsonElement;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioItem;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import io.github.binaryoverload.JSONConfig;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
@@ -159,8 +160,8 @@ public class GeneralUtils {
      * @param track The {@link Track} to get a progress bar for.
      * @return A string the represents a progress bar that represents the time played.
      */
-    public static String getProgressBar(Track track) {
-        float percentage = (100f / track.getTrack().getDuration() * track.getTrack().getPosition());
+    public static String getProgressBar(AudioTrack track) {
+        float percentage = (100f / track.getDuration() * track.getPosition());
         return "[" + StringUtils.repeat("▬", (int) Math.round((double) percentage / 10)) +
                 "](https://github.com/FlareBot)" +
                 StringUtils.repeat("▬", 10 - (int) Math.round((double) percentage / 10)) +

@@ -4,24 +4,29 @@ import com.arsenarsen.lavaplayerbridge.PlayerManager;
 import com.arsenarsen.lavaplayerbridge.libraries.LibraryFactory;
 import com.arsenarsen.lavaplayerbridge.libraries.UnknownBindingException;
 import com.arsenarsen.lavaplayerbridge.utils.JDAMultiShard;
+import lavalink.client.io.Lavalink;
+import lavalink.client.player.IPlayer;
+import lavalink.client.player.LavaplayerPlayerWrapper;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.SelfUser;
-import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.hooks.EventListener;
 import net.dv8tion.jda.core.utils.SessionControllerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.audio.PlayerListener;
-import stream.flarebot.flarebot.database.DatabaseManager;
 import stream.flarebot.flarebot.database.RedisController;
 import stream.flarebot.flarebot.music.QueueListener;
 import stream.flarebot.flarebot.scheduler.Scheduler;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,8 +39,6 @@ public class Client {
 
     private static Client instance;
 
-    private PlayerManager musicManager;
-
     private DefaultShardManagerBuilder builder;
     private ShardManager shardManager;
 
@@ -44,6 +47,14 @@ public class Client {
     // Command - reason
     private Map<String, String> disabledCommands = new ConcurrentHashMap<>();
     private Events events;
+
+    private PlayerManager musicManager;
+
+    private Map<String, IPlayer> players = new HashMap<>();
+
+    private Lavalink lavalink;
+
+    private boolean lavalinkEnabled;
 
 
     Client() {
@@ -89,16 +100,35 @@ public class Client {
     }
 
     private void setupMusic() {
-        try {
-            musicManager =
-                    PlayerManager.getPlayerManager(LibraryFactory.getLibrary(new JDAMultiShard(Getters.getShardManager())));
-        } catch (UnknownBindingException e) {
-            logger.error("Failed to initialize musicManager", e);
+        lavalink = new Lavalink(getJDA().getSelfUser().getId(),
+                Config.INS.getNumShards(),
+                shardId -> Client.instance().getShardManager().getShardById(shardId));
+
+        lavalinkEnabled = Config.INS.getNodes() != null;
+
+        if(lavalinkEnabled) {
+            for (Map.Entry<String, String> node : Config.INS.getNodes().entrySet()) {
+                try {
+                    lavalink.addNode(new URI(node.getKey()), node.getValue());
+                } catch (URISyntaxException e) {
+                    logger.error("Wrong Uri syntax " + node.getKey(), e);
+                }
+            }
+        } else {
+            try {
+                musicManager =
+                        PlayerManager.getPlayerManager(LibraryFactory.getLibrary(new JDAMultiShard(Getters.getShardManager())));
+            } catch (UnknownBindingException e) {
+                logger.error("Error building lavaplayer music manager", e);
+            }
         }
-        musicManager.getPlayerCreateHooks()
+
+        registerListener(lavalink);
+
+        /*musicManager.getPlayerCreateHooks()
                 .register(player -> player.getQueueHookManager().register(new QueueListener()));
 
-        musicManager.getPlayerCreateHooks().register(player -> player.addEventListener(new PlayerListener(player)));
+        musicManager.getPlayerCreateHooks().register(player -> player.addEventListener(new PlayerListener(player)));*/
     }
 
     public void registerListener(EventListener listener) {
@@ -129,8 +159,10 @@ public class Client {
         return shardManager;
     }
 
-    public PlayerManager getMusicManager() {
-        return musicManager;
+    public IPlayer getPlayer(String guildId) {
+        return players.putIfAbsent(guildId, lavalinkEnabled
+        ? lavalink.getLink(guildId).getPlayer()
+        : new LavaplayerPlayerWrapper(musicManager.getPlayer(guildId).getPlayer()));
     }
 
     public static Client instance() {

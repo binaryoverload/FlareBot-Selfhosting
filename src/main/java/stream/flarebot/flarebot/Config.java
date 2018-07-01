@@ -83,6 +83,8 @@ public class Config {
     // Err, not sure what to really name this.
     private int numShards;
 
+    private Map<String, String> nodes;
+
     public Config(String fileName) throws FileNotFoundException {
         this(getConfig(fileName));
     }
@@ -155,6 +157,8 @@ public class Config {
             importantLogWebhook = (String) config.getOrDefault("importantLogWebhook", "");
             statusLogWebhook = (String) config.getOrDefault("statusLogWebhook", "");
             hasteServer = (String) config.getOrDefault("hasteServer", null);
+
+            nodes = (Map<String, String>) config.getOrDefault("nodes", null);
 
             Object admins = config.getOrDefault("admins", new ArrayList<Long>());
             if (admins instanceof ArrayList && !((ArrayList) admins).isEmpty()) {
@@ -285,4 +289,7 @@ public class Config {
         return numShards;
     }
 
+    public Map<String, String> getNodes() {
+        return nodes;
+    }
 }
