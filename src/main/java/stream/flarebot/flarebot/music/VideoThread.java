@@ -1,17 +1,24 @@
 package stream.flarebot.flarebot.music;
 
 import com.arsenarsen.lavaplayerbridge.PlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
 import stream.flarebot.flarebot.music.extractors.Extractor;
@@ -20,11 +27,16 @@ import stream.flarebot.flarebot.music.extractors.SavedPlaylistExtractor;
 import stream.flarebot.flarebot.music.extractors.YouTubeExtractor;
 import stream.flarebot.flarebot.music.extractors.YouTubeSearchExtractor;
 import stream.flarebot.flarebot.util.MessageUtils;
+import stream.flarebot.flarebot.util.SourceProvider;
+import stream.flarebot.flarebot.util.buttons.ButtonRunnable;
+import stream.flarebot.flarebot.util.buttons.ButtonUtil;
+import stream.flarebot.flarebot.util.objects.ButtonGroup;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VideoThread extends Thread {
@@ -37,6 +49,7 @@ public class VideoThread extends Thread {
     private User user;
     private TextChannel channel;
     private String url;
+    private boolean search = false;
     private Extractor extractor;
 
     public static final Pattern YOUTUBE_PATTERN = Pattern.compile("(https?://)?(www\\.|m\\.)?" +
@@ -59,19 +72,18 @@ public class VideoThread extends Thread {
 
     private static AudioPlayerManager initManager() {
         playerManager = new DefaultAudioPlayerManager();
-        // TODO all of this
-        if (Config.INS.isYouTubeEnabled()) {
-            YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager(false);
-            youtubeAudioSourceManager.configureRequests(config -> RequestConfig.copy(config)
-                    .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
-                    .setConnectTimeout(5000)
-                    .build());
-            playerManager.registerSourceManager(youtubeAudioSourceManager);
-        }
+        YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager(false);
+        youtubeAudioSourceManager.configureRequests(config -> RequestConfig.copy(config)
+                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+                .setConnectTimeout(5000)
+                .build());
+        playerManager.registerSourceManager(youtubeAudioSourceManager);
         if (Config.INS.isMixerEnabled())
             playerManager.registerSourceManager(new BeamAudioSourceManager());
         if (Config.INS.isTwitchEnabled())
             playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
+        if (Config.INS.isSoundCloudEnabled())
+            playerManager.registerSourceManager(new SoundCloudAudioSourceManager());
 
         return playerManager;
     }
@@ -87,6 +99,34 @@ public class VideoThread extends Thread {
     @Override
     public void run() {
         Message message = channel.sendMessage("Processing..").complete();
+        if(search) {
+            //TODO search
+        } else {
+            SourceProvider provider = getProviderFromURL(url);
+
+            Matcher matcher = YOUTUBE_SONG_OR_PLAYLIST.matcher(url);
+            if(provider == SourceProvider.YOUTUBE && matcher.matches()) {
+                ButtonGroup buttonGroup = new ButtonGroup(user.getIdLong(), "youtube-song/playlist");
+                buttonGroup.addButton(new ButtonGroup.Button("\u0031\u20E3", (ownerID, user, message1) -> {
+                    if(user.getIdLong() == ownerID) {
+                        message1.delete().queue();
+                        loadLink(String.format(YOUTUBE_PLAYLIST, matcher.group(2)), channel, message);
+                    }
+                }));
+                buttonGroup.addButton(new ButtonGroup.Button("\u0032\u20E3", (ownerID, user, message1) -> {
+                    if(user.getIdLong() == ownerID) {
+                        message1.delete().queue();
+                        loadLink(String.format(YOUTUBE_PLAYLIST, matcher.group(1)), channel, message);
+                    }
+                }));
+                ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("How to load url?")
+                        .appendDescription("\u0031\u20E3: Load as playlist\n" +
+                                "\u0032\u20E3: Load as song")
+                        .build(), buttonGroup);
+            } else {
+                loadLink(url, channel, message);
+            }
+        }
         try {
             if (extractor == null)
                 for (Class<? extends Extractor> clazz : extractors) {
@@ -109,6 +149,60 @@ public class VideoThread extends Thread {
         }
     }
 
+    private void loadLink(String link, TextChannel channel, Message message) {
+        playerManager.loadItem(link, new AudioLoadResultHandler() {
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                if(Client.instance().getTracks(channel.getGuild().getId()).size() > 0) {
+                    Client.instance().getTracks(channel.getGuild().getId()).add(track);
+                } else {
+                    Client.instance().getPlayer(channel.getGuild().getId()).playTrack(track);
+                }
+                message.editMessage(new EmbedBuilder().setTitle("Loaded Song")
+                        .appendDescription("[" + track.getInfo().title + "](" + link + ")")
+                        .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
+                        .build()).queue();
+            }
+
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                int size = playlist.getTracks().size();
+                if(Client.instance().getTracks(channel.getGuild().getId()).size() > 0) {
+                    Client.instance().getTracks(channel.getGuild().getId()).addAll(playlist.getTracks());
+                } else {
+                    List<AudioTrack> tracks = playlist.getTracks();
+                    AudioTrack firstTrack = tracks.get(0);
+                    tracks.remove(0);
+                    Client.instance().getPlayer(channel.getGuild().getId()).playTrack(firstTrack);
+                    Client.instance().getTracks(channel.getGuild().getId()).addAll(tracks);
+                }
+                message.editMessage(new EmbedBuilder().setTitle("Loaded Playlist")
+                        .appendDescription("[" + playlist.getName() + "](" + link + ")")
+                        .addField("Song Count", String.valueOf(size), false)
+                        .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
+                        .build()).queue();
+            }
+
+            @Override
+            public void noMatches() {
+                message.editMessage("We couldn't find that song!").queue();
+            }
+
+            @Override
+            public void loadFailed(FriendlyException exception) {
+                MessageUtils.sendException("Error loading song\n" + exception.getMessage(), exception, channel);
+            }
+        });
+    }
+
+    private static SourceProvider getProviderFromURL(String url) {
+        for (SourceProvider provider : SourceProvider.values) {
+            if (provider.getPattern().matcher(url).matches())
+                return provider;
+        }
+        return null;
+    }
+
     @Override
     public void start() {
         if (url == null)
@@ -129,6 +223,7 @@ public class VideoThread extends Thread {
         thread.url = term;
         thread.channel = channel;
         thread.user = user;
+        thread.search = true;
         thread.extractor = new YouTubeSearchExtractor();
         return thread;
     }

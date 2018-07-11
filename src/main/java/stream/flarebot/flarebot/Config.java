@@ -50,6 +50,10 @@ public class Config {
     @Nonnull
     private String youtubeApi;
 
+    private boolean mixer;
+    private boolean twitch;
+    private boolean soundCloud;
+
     // DB
     @Nonnull
     private String databaseUsername;
@@ -115,6 +119,10 @@ public class Config {
                 log.error("No YouTube API key was specified! Please provide a key to start the bot.");
                 System.exit(1);
             }
+
+            mixer = (boolean) config.getOrDefault("mixer", false);
+            twitch = (boolean) config.getOrDefault("twitch", false);
+            soundCloud = (boolean) config.getOrDefault("soundCloud", false);
 
             Object db = config.get("database");
             if (db instanceof Map) {
@@ -205,6 +213,18 @@ public class Config {
     @Nonnull
     public String getYoutubeApi() {
         return youtubeApi;
+    }
+
+    public boolean isMixerEnabled() {
+        return  mixer;
+    }
+
+    public boolean isTwitchEnabled() {
+        return  twitch;
+    }
+
+    public boolean isSoundCloudEnabled() {
+        return  soundCloud;
     }
 
     @Nonnull

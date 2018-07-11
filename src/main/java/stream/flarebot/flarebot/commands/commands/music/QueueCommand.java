@@ -2,6 +2,7 @@ package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.PlayerManager;
 import com.arsenarsen.lavaplayerbridge.player.Track;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -28,7 +29,6 @@ public class QueueCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        PlayerManager manager = Client.instance().getMusicManager();
         if (message.getContentRaw().substring(1).startsWith("playlist")) {
             MessageUtils.sendWarningMessage("This command is deprecated! Please use `{%}queue` instead!", channel);
         }
@@ -41,7 +41,7 @@ public class QueueCommand implements Command {
                         MessageUtils.sendErrorMessage("You need the `" + Permission.QUEUE_CLEAR + "` permission to do this!", channel, sender);
                         return;
                     }
-                    manager.getPlayer(channel.getGuild().getId()).getPlaylist().clear();
+                    Client.instance().getTracks(guild.getGuildId()).clear();
                     channel.sendMessage("Cleared the current playlist!").queue();
                 } else if (args[0].equalsIgnoreCase("remove")) {
                     MessageUtils.sendUsage(this, channel, sender, args);
@@ -60,7 +60,7 @@ public class QueueCommand implements Command {
                         return;
                     }
 
-                    Queue<Track> queue = manager.getPlayer(channel.getGuild().getId()).getPlaylist();
+                    List<AudioTrack> queue = Client.instance().getTracks(guild.getGuildId());
 
                     if (number < 1 || number > queue.size()) {
                         MessageUtils
@@ -69,10 +69,7 @@ public class QueueCommand implements Command {
                         return;
                     }
 
-                    List<Track> playlist = new ArrayList<>(queue);
-                    playlist.remove(number - 1);
-                    queue.clear();
-                    queue.addAll(playlist);
+                    queue.remove(number - 1);
 
                     channel.sendMessage(MessageUtils.getEmbed(sender)
                             .setDescription("Removed number " + number + " from the playlist!")
@@ -83,23 +80,20 @@ public class QueueCommand implements Command {
     }
 
     private void send(TextChannel channel, Member sender) {
-        PlayerManager manager = Client.instance().getMusicManager();
-        Track currentTrack = manager.getPlayer(channel.getGuild().getId()).getPlayingTrack();
+        AudioTrack currentTrack = Client.instance().getPlayer(channel.getGuild().getId()).getPlayingTrack();
 
-        if (!manager.getPlayer(channel.getGuild().getId()).getPlaylist().isEmpty()
+        if (!Client.instance().getTracks(channel.getGuild().getId()).isEmpty()
                 || currentTrack != null) {
             List<String> songs = new ArrayList<>();
-            songs.add("Current Song: " + String.format("[`%s`](%s) | Requested by <@!%s>\n",
-                    currentTrack.getTrack().getInfo().title,
-                    YouTubeExtractor.WATCH_URL + currentTrack.getTrack().getIdentifier(),
-                    currentTrack.getMeta().get("requester")));
+            songs.add("Current Song: " + String.format("[`%s`](%s)\n",
+                    currentTrack.getInfo().title,
+                    YouTubeExtractor.WATCH_URL + currentTrack.getIdentifier()));
 
             AtomicInteger i = new AtomicInteger(1);
-            manager.getPlayer(channel.getGuild().getId()).getPlaylist().forEach(track ->
-                    songs.add(String.format("%s. [`%s`](%s) | Requested by <@!%s>\n", i.getAndIncrement(),
-                            track.getTrack().getInfo().title,
-                            YouTubeExtractor.WATCH_URL + track.getTrack().getIdentifier(),
-                            track.getMeta().get("requester"))));
+            Client.instance().getTracks(channel.getGuild().getId()).forEach(track ->
+                    songs.add(String.format("%s. [`%s`](%s)\n", i.getAndIncrement(),
+                            track.getInfo().title,
+                            YouTubeExtractor.WATCH_URL + track.getIdentifier())));
 
             PagedEmbedBuilder pe = new PagedEmbedBuilder<>(PaginationUtil.splitStringToList(songs.stream()
                     // 21 for 10 per page. 2 new lines per song and 1 more because it's annoying

@@ -4,10 +4,15 @@ import com.arsenarsen.lavaplayerbridge.PlayerManager;
 import com.arsenarsen.lavaplayerbridge.libraries.LibraryFactory;
 import com.arsenarsen.lavaplayerbridge.libraries.UnknownBindingException;
 import com.arsenarsen.lavaplayerbridge.utils.JDAMultiShard;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import lavalink.client.io.Lavalink;
 import lavalink.client.io.Link;
 import lavalink.client.player.IPlayer;
 import lavalink.client.player.LavaplayerPlayerWrapper;
+import lavalink.client.player.event.IPlayerEventListener;
+import lavalink.client.player.event.PlayerEvent;
+import lavalink.client.player.event.TrackEndEvent;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.JDA;
@@ -26,8 +31,10 @@ import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +59,7 @@ public class Client {
     private PlayerManager musicManager;
 
     private Map<String, IPlayer> players = new HashMap<>();
+    private Map<String, List<AudioTrack>> tracks = new HashMap<>();
 
     private Lavalink lavalink;
 
@@ -161,9 +169,26 @@ public class Client {
     }
 
     public IPlayer getPlayer(String guildId) {
-        return players.putIfAbsent(guildId, lavalinkEnabled
-        ? lavalink.getLink(guildId).getPlayer()
-        : new LavaplayerPlayerWrapper(musicManager.getPlayer(guildId).getPlayer()));
+        return players.putIfAbsent(guildId, createPlayer(guildId));
+    }
+
+    private IPlayer createPlayer(String guildId) {
+        IPlayer player = lavalinkEnabled
+                ? lavalink.getLink(guildId).getPlayer()
+                : new LavaplayerPlayerWrapper(musicManager.getPlayer(guildId).getPlayer());
+        tracks.put(guildId, new ArrayList<>());
+        player.addListener(event -> {
+            if(event instanceof TrackEndEvent) {
+                TrackEndEvent endEvent = (TrackEndEvent) event;
+                if(endEvent.getReason().equals(AudioTrackEndReason.FINISHED)) {
+                    tracks.get(guildId).remove(endEvent.getTrack());
+                    if(tracks.get(guildId).size() > 0) {
+                        player.playTrack(tracks.get(guildId).get(0));
+                    }
+                }
+            }
+        });
+        return player;
     }
 
     public static Client instance() {
@@ -209,5 +234,13 @@ public class Client {
 
     public Link getLink(String guildId) {
         return lavalink.getLink(guildId);
+    }
+
+    public List<AudioTrack> getTracks(String guildId) {
+        if(tracks.containsKey(guildId)) {
+            return tracks.get(guildId);
+        } else {
+            return new ArrayList<>();
+        }
     }
 }
