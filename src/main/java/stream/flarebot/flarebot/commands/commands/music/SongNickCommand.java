@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.player.Track;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -30,11 +31,11 @@ public class SongNickCommand implements Command {
                 return;
             }
             guild.setSongnick(true);
-            if (Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack() != null) {
-                Track track = Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
+            if (Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack() != null) {
+                AudioTrack track = Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack();
                 String str = null;
                 if (track != null) {
-                    str = track.getTrack().getInfo().title;
+                    str = track.getInfo().title;
                     if (str.length() > 32)
                         str = str.substring(0, 32);
                     str = str.substring(0, str.lastIndexOf(' ') + 1);

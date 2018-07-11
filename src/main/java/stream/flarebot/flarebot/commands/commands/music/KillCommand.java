@@ -13,12 +13,13 @@ public class KillCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        if (guild.getGuild().getAudioManager().isAttemptingToConnect() || guild.getGuild().getAudioManager().isConnected()) {
+        channel.sendMessage("Command disabled for now").queue();
+        /*if (guild.getGuild().getAudioManager().isAttemptingToConnect() || guild.getGuild().getAudioManager().isConnected()) {
             guild.getGuild().getAudioManager().closeAudioConnection();
             Client.instance().getMusicManager().getPlayer(guild.getGuildId()).clean();
         }
         channel.sendMessage("Killed the voice connection, please change voice region and try to use the bot " +
-                "again!").queue();
+                "again!").queue();*/
     }
 
     @Override

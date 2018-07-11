@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.player.Player;
+import lavalink.client.player.IPlayer;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -17,13 +18,13 @@ public class ResumeCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        Player player = Client.instance().getMusicManager().getPlayer(guild.getGuildId());
+        IPlayer player = Client.instance().getPlayer(guild.getGuildId());
         if (player.getPlayingTrack() == null) {
             MessageUtils.sendErrorMessage("There is no music playing!", channel);
-        } else if (!player.getPaused()) {
+        } else if (!player.isPaused()) {
             MessageUtils.sendErrorMessage("The music is already playing!", channel);
         } else {
-            player.play();
+            player.setPaused(false);
             MessageUtils.sendSuccessMessage("Resuming...!", channel);
         }
     }

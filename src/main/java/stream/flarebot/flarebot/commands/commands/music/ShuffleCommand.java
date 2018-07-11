@@ -11,11 +11,13 @@ import stream.flarebot.flarebot.commands.CommandType;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 
+import java.util.Collections;
+
 public class ShuffleCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        Client.instance().getMusicManager().getPlayer(channel.getGuild().getId()).shuffle();
+        Collections.shuffle(Client.instance().getTracks(channel.getGuild().getId()));
     }
 
     @Override

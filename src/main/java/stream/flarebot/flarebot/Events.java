@@ -242,9 +242,7 @@ public class Events extends ListenerAdapter {
     @Override
     public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
         if (event.getMember().getUser().getIdLong() == event.getJDA().getSelfUser().getIdLong()) {
-            if (Client.instance().getMusicManager().hasPlayer(event.getGuild().getId())) {
-                Client.instance().getMusicManager().getPlayer(event.getGuild().getId()).setPaused(true);
-            }
+            Client.instance().getPlayer(event.getGuild().getId()).setPaused(true);
         } else {
             handleVoiceConnectivity(event.getChannelLeft());
         }
