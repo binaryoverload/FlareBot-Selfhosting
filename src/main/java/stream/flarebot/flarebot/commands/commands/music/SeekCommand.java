@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.player.Track;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -27,23 +28,23 @@ public class SeekCommand implements Command {
                 MessageUtils.sendErrorMessage("You have entered an invalid duration to skip to!\n" + getExtraInfo(), channel);
                 return;
             }
-            Track t = Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
+            AudioTrack t = Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack();
             if (t == null) {
                 MessageUtils.sendErrorMessage("There is no song currently playing!", channel);
                 return;
             } else {
-                if (t.getTrack().getInfo().isStream) {
+                if (t.getInfo().isStream) {
                     MessageUtils.sendErrorMessage("Cannot seek on a livestream!", channel);
                     return;
-                } else if (!t.getTrack().isSeekable()) {
+                } else if (!t.isSeekable()) {
                     MessageUtils.sendErrorMessage("Cannot seek on this track!", channel);
                     return;
                 } else {
-                    if (millis >= t.getTrack().getDuration()) {
+                    if (millis >= t.getDuration()) {
                         MessageUtils.sendErrorMessage("The duration specified is bigger than the length of the video!", channel);
                         return;
                     } else {
-                        t.getTrack().setPosition(millis);
+                        t.setPosition(millis);
                         MessageUtils.sendSuccessMessage("The track has been skipped to: " + FormatUtils.formatJodaTime(new Duration(millis).toPeriod()), channel);
                         return;
                     }

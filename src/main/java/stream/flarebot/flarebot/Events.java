@@ -224,10 +224,10 @@ public class Events extends ListenerAdapter {
 
     @Override
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
-        if (event.getMember().getUser().equals(event.getJDA().getSelfUser()) && Client.instance().getMusicManager()
+        /*if (event.getMember().getUser().equals(event.getJDA().getSelfUser()) && Client.instance().getMusicManager()
                 .hasPlayer(event.getGuild().getId())) {
             Client.instance().getMusicManager().getPlayer(event.getGuild().getId()).setPaused(false);
-        }
+        }*/
         if (event.getMember().getUser().equals(event.getJDA().getSelfUser()))
             return;
         if (event.getGuild().getSelfMember().getVoiceState().getChannel() == null)

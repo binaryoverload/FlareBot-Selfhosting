@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.commands.commands.moderation;
 
 import com.arsenarsen.lavaplayerbridge.player.Player;
+import lavalink.client.player.IPlayer;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.Role;
@@ -58,10 +59,10 @@ public class FixCommand implements Command {
         }
         boolean nickReset = false;
         if (guild.isSongnickEnabled()) {
-            Player player = Client.instance().getMusicManager().getPlayer(guild.getGuildId());
+            IPlayer player = Client.instance().getPlayer(guild.getGuildId());
             String nickname = null;
             if (player.getPlayingTrack() != null) {
-                nickname = player.getPlayingTrack().getTrack().getInfo().title;
+                nickname = player.getPlayingTrack().getInfo().title;
                 if (nickname.length() > 32) {
                     nickname = nickname.substring(0, 32);
                 }

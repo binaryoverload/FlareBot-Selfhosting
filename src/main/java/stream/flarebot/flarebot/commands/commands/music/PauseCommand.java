@@ -15,7 +15,7 @@ public class PauseCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        Client.instance().getMusicManager().getPlayer(channel.getGuild().getId()).setPaused(true);
+        Client.instance().getPlayer(channel.getGuild().getId()).setPaused(true);
     }
 
     @Override
