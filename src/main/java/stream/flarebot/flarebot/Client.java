@@ -108,7 +108,7 @@ public class Client {
     }
 
     private void setupMusic() {
-        lavalink = new Lavalink(getJDA().getSelfUser().getId(),
+        lavalink = new Lavalink(Config.INS.getUserId(),
                 Config.INS.getNumShards(),
                 shardId -> Client.instance().getShardManager().getShardById(shardId));
 

@@ -82,6 +82,8 @@ public class Config {
     private WebhookClient statusLogHook;
     private String hasteServer;
 
+    private String userId;
+
     private ArrayList<Long> admins;
 
     // Err, not sure what to really name this.
@@ -117,6 +119,12 @@ public class Config {
             youtubeApi = (String) config.getOrDefault("youtubeApi", "");
             if (youtubeApi.isEmpty()) {
                 log.error("No YouTube API key was specified! Please provide a key to start the bot.");
+                System.exit(1);
+            }
+
+            userId = (String) config.getOrDefault("userId", "");
+            if (userId.isEmpty()) {
+                log.error("No User Id was specified! Please provide a user id to start the bot.");
                 System.exit(1);
             }
 
@@ -311,5 +319,9 @@ public class Config {
 
     public Map<String, String> getNodes() {
         return nodes;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 }
