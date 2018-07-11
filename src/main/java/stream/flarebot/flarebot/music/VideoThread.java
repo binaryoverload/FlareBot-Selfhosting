@@ -52,8 +52,7 @@ public class VideoThread extends Thread {
     private boolean search = false;
     private Extractor extractor;
 
-    public static final Pattern YOUTUBE_PATTERN = Pattern.compile("(https?://)?(www\\.|m\\.)?" +
-            "(youtube\\.com|youtu\\.be)?/(watch\\?v=|playlist\\?list=)(\\w+)(&list=(\\w+))?");
+    public static final Pattern YOUTUBE_PATTERN = Pattern.compile("(?:https?:\\/\\/)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?\\/(?:watch\\?v=|playlist\\?list=)([0-9A-z-_]+)(?:&list=([0-9A-z-_]+))?");
     public static final Pattern SOUNDCLOUD_PATTERN = Pattern.compile("(?:https?://)(?:www\\.|m\\.)?soundcloud\\.com/" +
             "([a-zA-Z0-9_-]{4,25})/([\\w_-]{4,})");
     public static final Pattern TWITCH_PATTERN = Pattern.compile("(?:https?://)(?:www\\.)?twitch\\.tv/" +
@@ -62,7 +61,7 @@ public class VideoThread extends Thread {
             "([\\w_-]{4,25})");
 
     private static final Pattern YOUTUBE_SONG_OR_PLAYLIST = Pattern
-            .compile("(?:https?://)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?(?:watch\\?v=|playlist\\?list=)([\\w_-]+)(?:&list=([\\w_-]+))?");
+            .compile("(?:https?:\\/\\/)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?\\/(?:watch\\?v=|playlist\\?list=)([0-9A-z-_]+)(?:&list=([0-9A-z-_]+))?");
 
     private static final String YOUTUBE_SONG = "https://youtube.com/watch?v=%s";
     private static final String YOUTUBE_PLAYLIST = "https://youtube.com/playlist?list=%s";
@@ -104,7 +103,7 @@ public class VideoThread extends Thread {
             SourceProvider provider = getProviderFromURL(url);
 
             Matcher matcher = YOUTUBE_SONG_OR_PLAYLIST.matcher(url);
-            if(provider == SourceProvider.YOUTUBE && matcher.matches()) {
+            if(matcher.matches()) {
                 ButtonGroup buttonGroup = new ButtonGroup(user.getIdLong(), "youtube-song/playlist");
                 buttonGroup.addButton(new ButtonGroup.Button("\u0031\u20E3", (ownerID, user, message1) -> {
                     if(user.getIdLong() == ownerID) {
@@ -166,7 +165,6 @@ public class VideoThread extends Thread {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 int size = playlist.getTracks().size();
-                System.out.println(Client.instance().getPlayer(channel.getGuild().getId()));
                 if(Client.instance()
                         .getPlayer(channel.getGuild().getId())
                         .getPlayingTrack() != null) {
@@ -175,7 +173,7 @@ public class VideoThread extends Thread {
                     List<AudioTrack> tracks = playlist.getTracks();
                     AudioTrack firstTrack = tracks.get(0);
                     tracks.remove(0);
-                    System.out.println(firstTrack.getInfo().title);
+                    System.out.println(tracks);
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(firstTrack);
                     Client.instance().getTracks(channel.getGuild().getId()).addAll(tracks);
                 }

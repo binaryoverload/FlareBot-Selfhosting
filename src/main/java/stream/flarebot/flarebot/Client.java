@@ -167,7 +167,7 @@ public class Client {
     }
 
     public IPlayer getPlayer(String guildId) {
-        players.putIfAbsent(guildId, createPlayer(guildId))
+        players.putIfAbsent(guildId, createPlayer(guildId));
         return players.get(guildId);
     }
 
@@ -242,6 +242,7 @@ public class Client {
     }
 
     public List<AudioTrack> getTracks(String guildId) {
-        return tracks.putIfAbsent(guildId, new ArrayList<>());
+        tracks.putIfAbsent(guildId, new ArrayList<>());
+        return tracks.get(guildId);
     }
 }
