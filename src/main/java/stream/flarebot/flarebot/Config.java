@@ -15,7 +15,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -89,7 +92,7 @@ public class Config {
     // Err, not sure what to really name this.
     private int numShards;
 
-    private Map<String, String> nodes;
+    private List<LinkedHashMap<String, Object>> nodes;
 
     public Config(String fileName) throws FileNotFoundException {
         this(getConfig(fileName));
@@ -174,7 +177,7 @@ public class Config {
             statusLogWebhook = (String) config.getOrDefault("statusLogWebhook", "");
             hasteServer = (String) config.getOrDefault("hasteServer", null);
 
-            nodes = (Map<String, String>) config.getOrDefault("nodes", null);
+            nodes = (List<LinkedHashMap<String, Object>>) config.getOrDefault("nodes", null);
 
             Object admins = config.getOrDefault("admins", new ArrayList<Long>());
             if (admins instanceof ArrayList && !((ArrayList) admins).isEmpty()) {
@@ -317,11 +320,47 @@ public class Config {
         return numShards;
     }
 
-    public Map<String, String> getNodes() {
+    public List<LinkedHashMap<String, Object>> getNodes() {
         return nodes;
     }
 
     public String getUserId() {
         return userId;
     }
+
+    /*public class LavaLinkNode {
+        private String address;
+        private int port;
+        private  String password;
+
+        public LavaLinkNode(String address, int port, String password) {
+            this.address = address;
+            this.port = port;
+            this.password = password;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+    }*/
 }

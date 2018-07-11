@@ -62,8 +62,7 @@ public class VideoThread extends Thread {
             "([\\w_-]{4,25})");
 
     private static final Pattern YOUTUBE_SONG_OR_PLAYLIST = Pattern
-            .compile("(?:https?://)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?" +
-                    "/(?:watch\\?v=|playlist\\?list=)([\\w_-]+)(?:&list=([\\w_-]+))?");
+            .compile("(?:https?://)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?(?:watch\\?v=|playlist\\?list=)([\\w_-]+)(?:&list=([\\w_-]+))?");
 
     private static final String YOUTUBE_SONG = "https://youtube.com/watch?v=%s";
     private static final String YOUTUBE_PLAYLIST = "https://youtube.com/playlist?list=%s";
@@ -116,7 +115,7 @@ public class VideoThread extends Thread {
                 buttonGroup.addButton(new ButtonGroup.Button("\u0032\u20E3", (ownerID, user, message1) -> {
                     if(user.getIdLong() == ownerID) {
                         message1.delete().queue();
-                        loadLink(String.format(YOUTUBE_PLAYLIST, matcher.group(1)), channel, message);
+                        loadLink(String.format(YOUTUBE_SONG, matcher.group(1)), channel, message);
                     }
                 }));
                 ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("How to load url?")
@@ -127,7 +126,7 @@ public class VideoThread extends Thread {
                 loadLink(url, channel, message);
             }
         }
-        try {
+        /*try {
             if (extractor == null)
                 for (Class<? extends Extractor> clazz : extractors) {
                     Extractor extractor = clazz.newInstance();
@@ -146,7 +145,7 @@ public class VideoThread extends Thread {
         } catch (Exception e) {
             FlareBot.LOGGER.warn(("Could not init extractor for '{}'. Guild ID: " + channel.getGuild().getId()).replace("{}", url), e);
             FlareBot.reportError(channel, "Something went wrong while searching for the video!", e);
-        }
+        }*/
     }
 
     private void loadLink(String link, TextChannel channel, Message message) {
@@ -167,12 +166,16 @@ public class VideoThread extends Thread {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 int size = playlist.getTracks().size();
-                if(Client.instance().getTracks(channel.getGuild().getId()).size() > 0) {
+                System.out.println(Client.instance().getPlayer(channel.getGuild().getId()));
+                if(Client.instance()
+                        .getPlayer(channel.getGuild().getId())
+                        .getPlayingTrack() != null) {
                     Client.instance().getTracks(channel.getGuild().getId()).addAll(playlist.getTracks());
                 } else {
                     List<AudioTrack> tracks = playlist.getTracks();
                     AudioTrack firstTrack = tracks.get(0);
                     tracks.remove(0);
+                    System.out.println(firstTrack.getInfo().title);
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(firstTrack);
                     Client.instance().getTracks(channel.getGuild().getId()).addAll(tracks);
                 }

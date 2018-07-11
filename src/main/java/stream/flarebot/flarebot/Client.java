@@ -10,6 +10,7 @@ import lavalink.client.io.Lavalink;
 import lavalink.client.io.Link;
 import lavalink.client.player.IPlayer;
 import lavalink.client.player.LavaplayerPlayerWrapper;
+import lavalink.client.player.event.AudioEventAdapterWrapped;
 import lavalink.client.player.event.IPlayerEventListener;
 import lavalink.client.player.event.PlayerEvent;
 import lavalink.client.player.event.TrackEndEvent;
@@ -33,6 +34,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,13 +76,12 @@ public class Client {
                 .setAutoReconnect(true)
                 .setBulkDeleteSplittingEnabled(false)
                 .setContextEnabled(true)
+                .addEventListeners(setupMusic())
                 .setSessionController(new SessionControllerAdapter());
     }
 
     protected void start() throws LoginException {
         shardManager = builder.build();
-
-        setupMusic();
 
         while (isNotReady()) {
             try {
@@ -107,19 +108,18 @@ public class Client {
         shardManager.shutdown();
     }
 
-    private void setupMusic() {
+    private Lavalink setupMusic() {
         lavalink = new Lavalink(Config.INS.getUserId(),
                 Config.INS.getNumShards(),
                 shardId -> Client.instance().getShardManager().getShardById(shardId));
-
-        lavalinkEnabled = Config.INS.getNodes() != null;
+        lavalinkEnabled = Config.INS.getNodes() != null && Config.INS.getNodes().size() > 0;
 
         if(lavalinkEnabled) {
-            for (Map.Entry<String, String> node : Config.INS.getNodes().entrySet()) {
+            for (LinkedHashMap<String, Object> node : Config.INS.getNodes()) {
                 try {
-                    lavalink.addNode(new URI(node.getKey()), node.getValue());
+                    lavalink.addNode(new URI("http://" + node.get("address") + ":" + node.get("port")), String.valueOf(node.get("password")));
                 } catch (URISyntaxException e) {
-                    logger.error("Wrong Uri syntax " + node.getKey(), e);
+                    logger.error("Wrong Uri syntax " + node.get("address") + ":" + node.get("port"), e);
                 }
             }
         } else {
@@ -131,8 +131,7 @@ public class Client {
             }
         }
 
-        registerListener(lavalink);
-
+        return lavalink;
         /*musicManager.getPlayerCreateHooks()
                 .register(player -> player.getQueueHookManager().register(new QueueListener()));
 
@@ -168,7 +167,8 @@ public class Client {
     }
 
     public IPlayer getPlayer(String guildId) {
-        return players.putIfAbsent(guildId, createPlayer(guildId));
+        players.putIfAbsent(guildId, createPlayer(guildId))
+        return players.get(guildId);
     }
 
     private IPlayer createPlayer(String guildId) {
@@ -176,17 +176,23 @@ public class Client {
                 ? lavalink.getLink(guildId).getPlayer()
                 : new LavaplayerPlayerWrapper(musicManager.getPlayer(guildId).getPlayer());
         tracks.put(guildId, new ArrayList<>());
-        player.addListener(event -> {
-            if(event instanceof TrackEndEvent) {
-                TrackEndEvent endEvent = (TrackEndEvent) event;
-                if(endEvent.getReason().equals(AudioTrackEndReason.FINISHED)) {
-                    tracks.get(guildId).remove(endEvent.getTrack());
-                    if(tracks.get(guildId).size() > 0) {
-                        player.playTrack(tracks.get(guildId).get(0));
+        player.addListener(
+                new AudioEventAdapterWrapped() {
+                    @Override
+                    public void onEvent(PlayerEvent event) {
+                        super.onEvent(event);
+                        if(event instanceof TrackEndEvent) {
+                            TrackEndEvent endEvent = (TrackEndEvent) event;
+                            if(endEvent.getReason().equals(AudioTrackEndReason.FINISHED)) {
+                                tracks.get(guildId).remove(endEvent.getTrack());
+                                if(tracks.get(guildId).size() > 0) {
+                                    player.playTrack(tracks.get(guildId).get(0));
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        });
+        );
         return player;
     }
 
@@ -236,10 +242,6 @@ public class Client {
     }
 
     public List<AudioTrack> getTracks(String guildId) {
-        if(tracks.containsKey(guildId)) {
-            return tracks.get(guildId);
-        } else {
-            return new ArrayList<>();
-        }
+        return tracks.putIfAbsent(guildId, new ArrayList<>());
     }
 }
