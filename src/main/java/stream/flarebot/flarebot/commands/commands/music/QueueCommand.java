@@ -41,7 +41,7 @@ public class QueueCommand implements Command {
                         MessageUtils.sendErrorMessage("You need the `" + Permission.QUEUE_CLEAR + "` permission to do this!", channel, sender);
                         return;
                     }
-                    //Client.instance().getTracks(guild.getGuildId()).clear();
+                    Client.instance().getTracks(guild.getGuildId()).clear();
                     channel.sendMessage("Cleared the current playlist!").queue();
                 } else if (args[0].equalsIgnoreCase("remove")) {
                     MessageUtils.sendUsage(this, channel, sender, args);
@@ -80,23 +80,22 @@ public class QueueCommand implements Command {
     }
 
     private void send(TextChannel channel, Member sender) {
-        System.out.println("Queue: " + Client.instance().getTracks(channel.getGuild().getId()));
         AudioTrack currentTrack = Client.instance().getPlayer(channel.getGuild().getId()).getPlayingTrack();
 
         if (Client.instance().getTracks(channel.getGuild().getId()).size() > 0
                 || currentTrack != null) {
-            System.out.println("Queue 2: " + Client.instance().getTracks(channel.getGuild().getId()));
             List<String> songs = new ArrayList<>();
-            songs.add("Current Song: " + String.format("[`%s`](%s)\n",
+            songs.add("Current Song: " + String.format("[`%s`](%s) | Requested by <@!%s>\n",
                     currentTrack.getInfo().title,
-                    currentTrack.getInfo().uri));
+                    currentTrack.getInfo().uri,
+                    currentTrack.getUserData()));
 
             AtomicInteger i = new AtomicInteger(1);
-            System.out.println("Queue 3: " + Client.instance().getTracks(channel.getGuild().getId()));
             Client.instance().getTracks(channel.getGuild().getId()).forEach(track ->
-                    songs.add(String.format("%s. [`%s`](%s)\n", i.getAndIncrement(),
+                    songs.add(String.format("%s. [`%s`](%s) | Requested by <@!%s>\n", i.getAndIncrement(),
                             track.getInfo().title,
-                            track.getInfo().uri)));
+                            track.getInfo().uri,
+                            track.getUserData())));
 
             PagedEmbedBuilder pe = new PagedEmbedBuilder<>(PaginationUtil.splitStringToList(songs.stream()
                     // 21 for 10 per page. 2 new lines per song and 1 more because it's annoying

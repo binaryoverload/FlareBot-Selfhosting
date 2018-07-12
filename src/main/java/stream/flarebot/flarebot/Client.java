@@ -167,7 +167,9 @@ public class Client {
     }
 
     public IPlayer getPlayer(String guildId) {
-        players.putIfAbsent(guildId, createPlayer(guildId));
+        if(!players.containsKey(guildId)) {
+            players.put(guildId, createPlayer(guildId));
+        }
         return players.get(guildId);
     }
 
@@ -184,9 +186,9 @@ public class Client {
                         if(event instanceof TrackEndEvent) {
                             TrackEndEvent endEvent = (TrackEndEvent) event;
                             if(endEvent.getReason().equals(AudioTrackEndReason.FINISHED)) {
-                                tracks.get(guildId).remove(endEvent.getTrack());
                                 if(tracks.get(guildId).size() > 0) {
                                     player.playTrack(tracks.get(guildId).get(0));
+                                    tracks.get(guildId).remove(0);
                                 }
                             }
                         }
@@ -242,7 +244,9 @@ public class Client {
     }
 
     public List<AudioTrack> getTracks(String guildId) {
-        tracks.putIfAbsent(guildId, new ArrayList<>());
+        if(!tracks.containsKey(guildId)) {
+            tracks.put(guildId, new ArrayList<>());
+        }
         return tracks.get(guildId);
     }
 }

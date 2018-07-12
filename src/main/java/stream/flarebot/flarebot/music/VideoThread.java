@@ -151,7 +151,8 @@ public class VideoThread extends Thread {
         playerManager.loadItem(link, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                if(Client.instance().getTracks(channel.getGuild().getId()).size() > 0) {
+                track.setUserData(user.getId());
+                if(Client.instance().getPlayer(channel.getGuild().getId()).getPlayingTrack() != null) {
                     Client.instance().getTracks(channel.getGuild().getId()).add(track);
                 } else {
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(track);
@@ -171,9 +172,11 @@ public class VideoThread extends Thread {
                     Client.instance().getTracks(channel.getGuild().getId()).addAll(playlist.getTracks());
                 } else {
                     List<AudioTrack> tracks = playlist.getTracks();
+                    tracks.forEach(track -> {
+                        track.setUserData(user.getId());
+                    });
                     AudioTrack firstTrack = tracks.get(0);
                     tracks.remove(0);
-                    System.out.println(tracks);
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(firstTrack);
                     Client.instance().getTracks(channel.getGuild().getId()).addAll(tracks);
                 }
