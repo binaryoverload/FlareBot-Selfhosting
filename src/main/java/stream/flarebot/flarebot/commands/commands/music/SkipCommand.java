@@ -46,13 +46,15 @@ public class SkipCommand implements Command {
             return;
         }
         AudioTrack currentTrack = Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack();
-       /* if (args.length == 0 && currentTrack.getMeta().get("requester").equals(sender.getId())) {
+        if (args.length == 0 && currentTrack.getUserData().equals(sender.getId())) {
             MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("Skipped your own song!").build(), TimeUnit.SECONDS.toMillis(5), channel);
-            musicManager.getPlayer(guild.getGuildId()).skip();
+            AudioTrack nextTrack = Client.instance().getTracks(guild.getGuildId()).get(0);
+            Client.instance().getPlayer(guild.getGuildId()).playTrack(nextTrack);
+            Client.instance().getTracks(guild.getGuildId()).remove(0);
             if (songMessage)
                 SongCommand.updateSongMessage(sender, message, channel);
             return;
-        }*/
+        }
 
         if (args.length != 1) {
             if (!channel.getGuild().getMember(sender).getVoiceState().inVoiceChannel() ||

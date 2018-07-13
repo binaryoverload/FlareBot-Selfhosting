@@ -16,8 +16,13 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.Config;
 import stream.flarebot.flarebot.FlareBot;
@@ -28,10 +33,14 @@ import stream.flarebot.flarebot.music.extractors.YouTubeExtractor;
 import stream.flarebot.flarebot.music.extractors.YouTubeSearchExtractor;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.SourceProvider;
+import stream.flarebot.flarebot.util.WebUtils;
 import stream.flarebot.flarebot.util.buttons.ButtonRunnable;
 import stream.flarebot.flarebot.util.buttons.ButtonUtil;
 import stream.flarebot.flarebot.util.objects.ButtonGroup;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -98,7 +107,63 @@ public class VideoThread extends Thread {
     public void run() {
         Message message = channel.sendMessage("Processing..").complete();
         if(search) {
-            //TODO search
+            boolean isUrl = url.startsWith("http");
+            if (isUrl) {
+                loadLink(url, channel, message);
+                return;
+            }
+
+            Response response = null;
+            try {
+                response = WebUtils.get(new Request.Builder().url(String.format("https://www.googleapis.com/youtube/v3/" +
+                                "search?q=%s&part=snippet&key=%s&type=video,playlist", URLEncoder.encode(url, "UTF-8"),
+                        Config.INS.getYoutubeApi())));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if(response != null) {
+                if(!response.isSuccessful()) {
+                    message.editMessage("Error searching for video!").queue();
+                    return;
+                }
+
+                ResponseBody body = response.body();
+                if(body == null) {
+                    message.editMessage("No videos found!").queue();
+                    return;
+                }
+
+                List<String> contentIds = new ArrayList<>();
+                JSONArray results = null;
+                try {
+                    results = new JSONObject(body.string()).getJSONArray("items");
+                } catch (IOException e) {
+                    message.editMessage("Youtube failed to return video Ids!").queue();
+                    return;
+                }
+                body.close();
+                response.close();
+
+                for(Object o : results) {
+                    if (o instanceof JSONObject) {
+                        JSONObject id = ((JSONObject) o).getJSONObject("id");
+                        switch (id.getString("kind")) {
+                            case "youtube#video":
+                                contentIds.add(id.getString("videoId"));
+                                break;
+                            case "youtube#playlist":
+                                contentIds.add(id.getString("playlistId"));
+                                break;
+                        }
+                    }
+                }
+
+                loadLink(contentIds.get(0), channel, message);
+            } else {
+                message.editMessage("Got null response from youtube").queue();
+            }
+
         } else {
             SourceProvider provider = getProviderFromURL(url);
 
@@ -158,7 +223,7 @@ public class VideoThread extends Thread {
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(track);
                 }
                 message.editMessage(new EmbedBuilder().setTitle("Loaded Song")
-                        .appendDescription("[" + track.getInfo().title + "](" + link + ")")
+                        .appendDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
                         .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
                         .build()).queue();
             }

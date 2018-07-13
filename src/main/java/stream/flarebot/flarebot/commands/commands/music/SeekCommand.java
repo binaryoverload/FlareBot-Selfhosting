@@ -44,7 +44,7 @@ public class SeekCommand implements Command {
                         MessageUtils.sendErrorMessage("The duration specified is bigger than the length of the video!", channel);
                         return;
                     } else {
-                        t.setPosition(millis);
+                        Client.instance().getPlayer(guild.getGuildId()).seekTo(millis);
                         MessageUtils.sendSuccessMessage("The track has been skipped to: " + FormatUtils.formatJodaTime(new Duration(millis).toPeriod()), channel);
                         return;
                     }

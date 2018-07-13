@@ -47,8 +47,8 @@ public class SongCommand implements Command {
             if (track.getInfo().isStream)
                 eb.addField("Amount Played", "Issa livestream ;)", false);
             else
-                eb.addField("Amount Played", GeneralUtils.getProgressBar(track), true)
-                        .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(track.getPosition()),
+                eb.addField("Amount Played", GeneralUtils.getProgressBar(track, Client.instance().getPlayer(guild.getGuildId())), true)
+                        .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(Client.instance().getPlayer(channel.getGuild().getId()).getTrackPosition()),
                                 FormatUtils.formatDuration(track.getDuration())), false);
             ButtonGroup buttonGroup = new ButtonGroup(sender.getIdLong(), ButtonGroupConstants.SONG);
             buttonGroup.addButton(new ButtonGroup.Button("\u23EF", (owner, user, message1) -> {
@@ -128,12 +128,12 @@ public class SongCommand implements Command {
             return;
         EmbedBuilder eb = MessageUtils.getEmbed(sender)
                 .addField("Current Song", getLink(track), false)
-                .setThumbnail("https://img.youtube.com/vi/" + track.getIdentifier() + "/hqdefault.jpg");
+                .setThumbnail(GeneralUtils.getTrackPreview(track));
         if (track.getInfo().isStream)
             eb.addField("Amount Played", "Issa livestream ;)", false);
         else
-            eb.addField("Amount Played", GeneralUtils.getProgressBar(track), true)
-                    .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(track.getPosition()),
+            eb.addField("Amount Played", GeneralUtils.getProgressBar(track, Client.instance().getPlayer(channel.getGuild().getId())), true)
+                    .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(Client.instance().getPlayer(channel.getGuild().getId()).getTrackPosition()),
                             FormatUtils.formatDuration(track.getDuration())), false);
         message.editMessage(eb.build()).queue();
     }

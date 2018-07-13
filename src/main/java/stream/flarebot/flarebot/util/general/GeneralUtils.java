@@ -3,10 +3,13 @@ package stream.flarebot.flarebot.util.general;
 import com.arsenarsen.lavaplayerbridge.player.Player;
 import com.arsenarsen.lavaplayerbridge.player.Track;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import io.github.binaryoverload.JSONConfig;
+import lavalink.client.player.IPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -16,6 +19,9 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;
 import net.dv8tion.jda.core.requests.ErrorResponse;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
 import org.joda.time.format.PeriodFormatter;
@@ -34,6 +40,7 @@ import stream.flarebot.flarebot.objects.ReportMessage;
 import stream.flarebot.flarebot.permissions.PerGuildPermissions;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.Pair;
+import stream.flarebot.flarebot.util.WebUtils;
 import stream.flarebot.flarebot.util.errorhandling.Markers;
 import stream.flarebot.flarebot.util.implementations.MultiSelectionContent;
 
@@ -155,13 +162,14 @@ public class GeneralUtils {
     }
 
     /**
-     * Gets the progress bar for the current {@link Track} including the percent played.
+     * Gets the progress bar for the current {@link AudioTrack} including the percent played.
      *
-     * @param track The {@link Track} to get a progress bar for.
+     * @param track The {@link AudioTrack} to get a progress bar for.
+     * @param player The {@link IPlayer} to use to get the track position.
      * @return A string the represents a progress bar that represents the time played.
      */
-    public static String getProgressBar(AudioTrack track) {
-        float percentage = (100f / track.getDuration() * track.getPosition());
+    public static String getProgressBar(AudioTrack track, IPlayer player) {
+        float percentage = (100f / track.getDuration() * player.getTrackPosition());
         return "[" + StringUtils.repeat("▬", (int) Math.round((double) percentage / 10)) +
                 "](https://github.com/FlareBot)" +
                 StringUtils.repeat("▬", 10 - (int) Math.round((double) percentage / 10)) +
@@ -668,6 +676,20 @@ public class GeneralUtils {
         }
 
         return result;
+    }
+
+    public static String getTrackPreview(AudioTrack track) {
+        String name = track.getSourceManager().getSourceName();
+        String link = "";
+        switch (name) {
+            case "youtube":
+                link = "https://img.youtube.com/vi/" + track.getIdentifier() + "/hqdefault.jpg";
+                break;
+            case "twitch":
+                link = "https://static-cdn.jtvnw.net/previews-ttv/" + track.getIdentifier() + "-640x360.jpg";
+                break;
+        }
+        return link;
     }
 
 }

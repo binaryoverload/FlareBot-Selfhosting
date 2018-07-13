@@ -57,6 +57,8 @@ public class Config {
     private boolean twitch;
     private boolean soundCloud;
 
+    private String souldcloudApi;
+
     // DB
     @Nonnull
     private String databaseUsername;
@@ -134,6 +136,14 @@ public class Config {
             mixer = (boolean) config.getOrDefault("mixer", false);
             twitch = (boolean) config.getOrDefault("twitch", false);
             soundCloud = (boolean) config.getOrDefault("soundCloud", false);
+
+            if(soundCloud) {
+                souldcloudApi = (String) config.getOrDefault("soundCloudClientId", "");
+                if(souldcloudApi.isEmpty()) {
+                    /*log.error("Sound cloud is enabled but no client id is present!");
+                    System.exit(1);*/
+                }
+            }
 
             Object db = config.get("database");
             if (db instanceof Map) {
@@ -328,39 +338,7 @@ public class Config {
         return userId;
     }
 
-    /*public class LavaLinkNode {
-        private String address;
-        private int port;
-        private  String password;
-
-        public LavaLinkNode(String address, int port, String password) {
-            this.address = address;
-            this.port = port;
-            this.password = password;
-        }
-
-        public String getAddress() {
-            return address;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setAddress(String address) {
-            this.address = address;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
+    /*public String getSouldcloudApi() {
+        return souldcloudApi;
     }*/
 }
