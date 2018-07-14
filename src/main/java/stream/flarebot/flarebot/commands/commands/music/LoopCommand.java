@@ -17,6 +17,7 @@ public class LoopCommand implements Command {
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
         channel.sendMessage("This command is disabled for now").queue();
+        // Disabled because their isn't a good way to implement this atm
         /*Player player = Client.instance().getMusicManager().getPlayer(channel.getGuild().getId());
         if (!player.getLooping()) {
             player.setLooping(true);

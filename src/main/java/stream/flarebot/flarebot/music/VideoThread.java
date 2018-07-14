@@ -122,7 +122,6 @@ public class VideoThread extends Thread {
             }
 
         } else {
-            //SourceProvider provider = getProviderFromURL(url);
             if (url.contains("\u200B")) {
                 String[] split = url.split("\u200B");
                 String name = split[0];
@@ -158,26 +157,6 @@ public class VideoThread extends Thread {
                 }
             }
         }
-        /*try {
-            if (extractor == null)
-                for (Class<? extends Extractor> clazz : extractors) {
-                    Extractor extractor = clazz.newInstance();
-                    if (!extractor.valid(url))
-                        continue;
-                    this.extractor = extractor;
-                    break;
-                }
-            if (extractor == null) {
-                MessageUtils.editMessage(message, "Could not find a way to process that..");
-                return;
-            }
-            if (managers.add(extractor.getSourceManagerClass()))
-                manager.getManager().registerSourceManager(extractor.newSourceManagerInstance());
-            extractor.process(url, manager.getPlayer(channel.getGuild().getId()), message, user);
-        } catch (Exception e) {
-            FlareBot.LOGGER.warn(("Could not init extractor for '{}'. Guild ID: " + channel.getGuild().getId()).replace("{}", url), e);
-            FlareBot.reportError(channel, "Something went wrong while searching for the video!", e);
-        }*/
     }
 
     private void loadLink(String link, TextChannel channel, Message message) {

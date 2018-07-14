@@ -117,12 +117,6 @@ public class Getters {
                 .count();
     }
 
-    /*public static int getSongsQueued() {
-        return client().getMusicManager().getPlayers().stream()
-                .mapToInt(p -> p.getPlaylist().size())
-                .sum();
-    }*/
-
     // Other
     public static List<JDA> getShards() {
         return client().getShardManager().getShards();

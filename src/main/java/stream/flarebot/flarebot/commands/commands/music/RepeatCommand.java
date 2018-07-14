@@ -24,6 +24,7 @@ public class RepeatCommand implements Command {
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
         channel.sendMessage("Command disabled for now").queue();
+        // Disabled because their isn't a good way to implement this atm
         /*Player player = Client.instance().getMusicManager().getPlayer(channel.getGuild().getId());
         if (player.getPlayingTrack() == null) {
             MessageUtils.sendErrorMessage("Can't repeat when their is no song to repeat!", channel);

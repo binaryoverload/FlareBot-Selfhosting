@@ -11,7 +11,6 @@ import lavalink.client.io.Link;
 import lavalink.client.player.IPlayer;
 import lavalink.client.player.LavaplayerPlayerWrapper;
 import lavalink.client.player.event.AudioEventAdapterWrapped;
-import lavalink.client.player.event.IPlayerEventListener;
 import lavalink.client.player.event.PlayerEvent;
 import lavalink.client.player.event.TrackEndEvent;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
@@ -24,7 +23,6 @@ import net.dv8tion.jda.core.utils.SessionControllerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.database.RedisController;
-import stream.flarebot.flarebot.music.QueueListener;
 import stream.flarebot.flarebot.scheduler.Scheduler;
 
 import javax.annotation.Nonnull;
@@ -33,7 +31,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,10 +129,6 @@ public class Client {
         }
 
         return lavalink;
-        /*musicManager.getPlayerCreateHooks()
-                .register(player -> player.getQueueHookManager().register(new QueueListener()));
-
-        musicManager.getPlayerCreateHooks().register(player -> player.addEventListener(new PlayerListener(player)));*/
     }
 
     public void registerListener(EventListener listener) {

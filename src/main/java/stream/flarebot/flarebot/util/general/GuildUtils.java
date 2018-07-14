@@ -299,11 +299,6 @@ public class GuildUtils {
                 return;
             }
             Client.instance().getLink(channel.getGuild().getId()).connect(member.getVoiceState().getChannel());
-            /*musicManager.getPlayer(channel.getGuild().getId()).play();
-
-            if (musicManager.getPlayer(channel.getGuild().getId()).getPaused()) {
-                MessageUtils.sendWarningMessage("The music is currently paused do `{%}resume`", channel);
-            }*/
         } else {
             MessageUtils.sendErrorMessage("I do not have permission to " + (!channel.getGuild().getSelfMember()
                     .hasPermission(member.getVoiceState()

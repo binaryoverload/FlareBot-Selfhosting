@@ -46,7 +46,7 @@ presence: 'Walshy is cool'
 #redisPassword: 'password'
 
 # REQUIRED
-# defines your lavalink nodes
+# Defines your lavalink nodes
 nodes:
   - address: '127.0.0.1'
     port: 80
