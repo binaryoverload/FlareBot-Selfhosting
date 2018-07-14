@@ -60,8 +60,9 @@ public class SearchCommand implements Command {
                         case 5:
                             unicode = "\u0035\u20E3";
                     }
+                    String extra = searchResult.getKey().length() > 11 ? "\\\uD83C\uDFB6" : "\\\uD83C\uDFB5";
                     String name = MessageUtils.escapeMarkdown(searchResult.getValue());
-                    sb.append(unicode).append(": `").append(name).append("`\n");
+                    sb.append(unicode).append(": `").append(name).append("` - ").append(extra).append("\n");
                     group.addButton(new ButtonGroup.Button(unicode, (ownerID, user, message2) -> {
                         if(ownerID != user.getIdLong()) return;
                         VideoThread.getThread(searchResult.getKey(), channel, sender).start();
@@ -73,7 +74,7 @@ public class SearchCommand implements Command {
                     message2.delete().queue();
                 })));
                 message1.delete().queue();
-                ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("Search Results").appendDescription(sb.toString()).build(), group);
+                ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("Search Results").appendDescription(sb.toString()).setFooter("\uD83C\uDFB5 - song, \uD83C\uDFB6 - playlist", sender.getAvatarUrl()).build(), group);
             }
         });
     }
