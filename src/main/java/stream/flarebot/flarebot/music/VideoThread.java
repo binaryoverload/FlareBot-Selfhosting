@@ -165,29 +165,40 @@ public class VideoThread extends Thread {
             }
 
         } else {
-            SourceProvider provider = getProviderFromURL(url);
-
-            Matcher matcher = YOUTUBE_SONG_OR_PLAYLIST.matcher(url);
-            if(matcher.matches()) {
-                ButtonGroup buttonGroup = new ButtonGroup(user.getIdLong(), "youtube-song/playlist");
-                buttonGroup.addButton(new ButtonGroup.Button("\u0031\u20E3", (ownerID, user, message1) -> {
-                    if(user.getIdLong() == ownerID) {
-                        message1.delete().queue();
-                        loadLink(String.format(YOUTUBE_PLAYLIST, matcher.group(2)), channel, message);
-                    }
-                }));
-                buttonGroup.addButton(new ButtonGroup.Button("\u0032\u20E3", (ownerID, user, message1) -> {
-                    if(user.getIdLong() == ownerID) {
-                        message1.delete().queue();
-                        loadLink(String.format(YOUTUBE_SONG, matcher.group(1)), channel, message);
-                    }
-                }));
-                ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("How to load url?")
-                        .appendDescription("\u0031\u20E3: Load as playlist\n" +
-                                "\u0032\u20E3: Load as song")
-                        .build(), buttonGroup);
+            //SourceProvider provider = getProviderFromURL(url);
+            if (url.contains("\u200B")) {
+                String[] split = url.split("\u200B");
+                String name = split[0];
+                String songs = split[1];
+                songs = songs.replaceAll("\\[", "").replaceAll("\\]","");
+                String[] items = songs.split("\\s*,\\s*");
+                for (String item : items) {
+                    loadLink(item, channel, null);
+                }
+                message.editMessage(new EmbedBuilder().setTitle("Loaded Playlist").addField("Playlist", name, true).addField("Song count", String.valueOf(items.length), true).build()).queue();
             } else {
-                loadLink(url, channel, message);
+                Matcher matcher = YOUTUBE_SONG_OR_PLAYLIST.matcher(url);
+                if (matcher.matches()) {
+                    ButtonGroup buttonGroup = new ButtonGroup(user.getIdLong(), "youtube-song/playlist");
+                    buttonGroup.addButton(new ButtonGroup.Button("\u0031\u20E3", (ownerID, user, message1) -> {
+                        if (user.getIdLong() == ownerID) {
+                            message1.delete().queue();
+                            loadLink(String.format(YOUTUBE_PLAYLIST, matcher.group(2)), channel, message);
+                        }
+                    }));
+                    buttonGroup.addButton(new ButtonGroup.Button("\u0032\u20E3", (ownerID, user, message1) -> {
+                        if (user.getIdLong() == ownerID) {
+                            message1.delete().queue();
+                            loadLink(String.format(YOUTUBE_SONG, matcher.group(1)), channel, message);
+                        }
+                    }));
+                    ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("How to load url?")
+                            .appendDescription("\u0031\u20E3: Load as playlist\n" +
+                                    "\u0032\u20E3: Load as song")
+                            .build(), buttonGroup);
+                } else {
+                    loadLink(url, channel, message);
+                }
             }
         }
         /*try {
@@ -222,10 +233,12 @@ public class VideoThread extends Thread {
                 } else {
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(track);
                 }
-                message.editMessage(new EmbedBuilder().setTitle("Loaded Song")
-                        .appendDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
-                        .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
-                        .build()).queue();
+                if(message != null) {
+                    message.editMessage(new EmbedBuilder().setTitle("Loaded Song")
+                            .appendDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
+                            .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
+                            .build()).queue();
+                }
             }
 
             @Override
@@ -245,11 +258,13 @@ public class VideoThread extends Thread {
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(firstTrack);
                     Client.instance().getTracks(channel.getGuild().getId()).addAll(tracks);
                 }
-                message.editMessage(new EmbedBuilder().setTitle("Loaded Playlist")
-                        .appendDescription("[" + playlist.getName() + "](" + link + ")")
-                        .addField("Song Count", String.valueOf(size), false)
-                        .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
-                        .build()).queue();
+                if(message != null) {
+                    message.editMessage(new EmbedBuilder().setTitle("Loaded Playlist")
+                            .appendDescription("[" + playlist.getName() + "](" + link + ")")
+                            .addField("Song Count", String.valueOf(size), false)
+                            .setFooter("Requested by " + MessageUtils.getTag(user), user.getAvatarUrl())
+                            .build()).queue();
+                }
             }
 
             @Override

@@ -35,7 +35,7 @@ public class SaveCommand implements Command {
             MessageUtils.sendErrorMessage("Name can only be a maximum of 20 characters!", channel);
             return;
         }
-        if (Client.instance().getTracks(guild.getGuildId()).size() < 1) {
+        if (Client.instance().getTracks(guild.getGuildId()).size() == 0) {
             MessageUtils.sendErrorMessage("Your playlist is empty!", channel);
             return;
         }
@@ -46,9 +46,9 @@ public class SaveCommand implements Command {
         channel.sendTyping().complete();
 
         List<String> tracks = playlist.stream()
-                .map(AudioTrack::getIdentifier).collect(Collectors.toList());
+                .map(track -> track.getInfo().uri).collect(Collectors.toList());
         if (currentlyPlaying != null) {
-            tracks.add(currentlyPlaying.getIdentifier());
+            tracks.add(0, currentlyPlaying.getInfo().uri);
         }
 
         if (tracks.isEmpty()) {
