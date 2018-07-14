@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.music;
 
 import com.arsenarsen.lavaplayerbridge.PlayerManager;
+import com.google.gson.JsonObject;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -42,9 +43,12 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -112,56 +116,9 @@ public class VideoThread extends Thread {
                 loadLink(url, channel, message);
                 return;
             }
-
-            Response response = null;
-            try {
-                response = WebUtils.get(new Request.Builder().url(String.format("https://www.googleapis.com/youtube/v3/" +
-                                "search?q=%s&part=snippet&key=%s&type=video,playlist", URLEncoder.encode(url, "UTF-8"),
-                        Config.INS.getYoutubeApi())));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if(response != null) {
-                if(!response.isSuccessful()) {
-                    message.editMessage("Error searching for video!").queue();
-                    return;
-                }
-
-                ResponseBody body = response.body();
-                if(body == null) {
-                    message.editMessage("No videos found!").queue();
-                    return;
-                }
-
-                List<String> contentIds = new ArrayList<>();
-                JSONArray results = null;
-                try {
-                    results = new JSONObject(body.string()).getJSONArray("items");
-                } catch (IOException e) {
-                    message.editMessage("Youtube failed to return video Ids!").queue();
-                    return;
-                }
-                body.close();
-                response.close();
-
-                for(Object o : results) {
-                    if (o instanceof JSONObject) {
-                        JSONObject id = ((JSONObject) o).getJSONObject("id");
-                        switch (id.getString("kind")) {
-                            case "youtube#video":
-                                contentIds.add(id.getString("videoId"));
-                                break;
-                            case "youtube#playlist":
-                                contentIds.add(id.getString("playlistId"));
-                                break;
-                        }
-                    }
-                }
-
-                loadLink(contentIds.get(0), channel, message);
-            } else {
-                message.editMessage("Got null response from youtube").queue();
+            List<Map.Entry<String, String>> searchResults = getSearchResults(url, message);
+            if(searchResults != null) {
+                loadLink(searchResults.get(0).getKey(), channel, message);
             }
 
         } else {
@@ -310,5 +267,96 @@ public class VideoThread extends Thread {
         thread.search = true;
         thread.extractor = new YouTubeSearchExtractor();
         return thread;
+    }
+
+    public static List<Map.Entry<String, String>> getSearchResults(String search, Message message) {
+        Response response = null;
+        try {
+            response = WebUtils.get(new Request.Builder().url(String.format("https://www.googleapis.com/youtube/v3/" +
+                            "search?q=%s&part=snippet&key=%s&type=video,playlist", URLEncoder.encode(search, "UTF-8"),
+                    Config.INS.getYoutubeApi())));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(response != null) {
+            if(!response.isSuccessful()) {
+                message.editMessage("Error searching for video!").queue();
+                return null;
+            }
+
+            ResponseBody body = response.body();
+            if(body == null) {
+                message.editMessage("No videos found!").queue();
+                return null;
+            }
+
+            List<Map.Entry<String, String>> contentIds = new ArrayList<>();
+            JSONArray results;
+            try {
+                results = new JSONObject(body.string()).getJSONArray("items");
+            } catch (IOException e) {
+                message.editMessage("Youtube failed to return video Ids!").queue();
+                return null;
+            }
+            body.close();
+            response.close();
+
+            for(Object o : results) {
+                if (o instanceof JSONObject) {
+                    JSONObject snippet = ((JSONObject) o).getJSONObject("snippet");
+                    JSONObject id = ((JSONObject) o).getJSONObject("id");
+                    switch (id.getString("kind")) {
+                        case "youtube#video":
+                            contentIds.add(new Map.Entry<String, String>() {
+                                String value = snippet.getString("title");
+
+                                @Override
+                                public String getKey() {
+                                    return id.getString("videoId");
+                                }
+
+                                @Override
+                                public String getValue() {
+                                    return value;
+                                }
+
+                                @Override
+                                public String setValue(String value) {
+                                    this.value = value;
+                                    return value;
+                                }
+                            });
+                            break;
+                        case "youtube#playlist":
+                            contentIds.add(new Map.Entry<String, String>() {
+                                String value = snippet.getString("title");
+
+                                @Override
+                                public String getKey() {
+                                    return id.getString("playlistId");
+                                }
+
+                                @Override
+                                public String getValue() {
+                                    return value;
+                                }
+
+                                @Override
+                                public String setValue(String value) {
+                                    this.value = value;
+                                    return value;
+                                }
+                            });
+                            break;
+                    }
+                }
+            }
+
+            return contentIds;
+        } else {
+            message.editMessage("Got null response from youtube").queue();
+            return null;
+        }
     }
 }

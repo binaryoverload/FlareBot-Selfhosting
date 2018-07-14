@@ -27,15 +27,7 @@ public class PlayCommand implements Command {
                             ":zzz: :night_with_stars:").setColor(Color.blue).build()).queue();
                 }
             }
-            if (member.getVoiceState().inVoiceChannel()) {
-                if (channel.getGuild().getSelfMember().getVoiceState().inVoiceChannel() &&
-                        !(channel.getGuild().getSelfMember().getVoiceState().getAudioChannel().getId()
-                                .equals(member.getVoiceState().getAudioChannel().getId()))) {
-                    MessageUtils.sendErrorMessage("I cannot join your channel! I am already in a channel!", channel);
-                    return;
-                }
-                Client.instance().getLink(guild.getGuildId()).connect(member.getVoiceState().getChannel());
-            }
+            if (SearchCommand.joinChannel(guild, channel, member)) return;
             if (args[0].startsWith("http") || args[0].startsWith("www.")) {
                 VideoThread.getThread(args[0], channel, sender).start();
             } else {
