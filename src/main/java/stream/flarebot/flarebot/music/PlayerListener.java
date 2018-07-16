@@ -79,7 +79,7 @@ public class PlayerListener extends AudioEventAdapterWrapped {
                                 .addField("Requested by",
                                         String.format("<@!%s>", track.getUserData()), false)
                                 .addField("Next up", tracks.isEmpty() ? "Nothing" :
-                                        SongCommand.getLink(tracks.get(0)), false)
+                                        SongCommand.getLink(tracks.get(1)), false)
                                 .setImage(GeneralUtils.getTrackPreview(track))
                                 .build()).queue();
                     } else {

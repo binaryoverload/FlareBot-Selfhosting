@@ -68,7 +68,7 @@ public class SearchCommand implements Command {
                     sb.append(unicode).append(": `").append(name).append("` - ").append(extra).append("\n");
                     group.addButton(new ButtonGroup.Button(unicode, (ownerID, user, message2) -> {
                         if(ownerID != user.getIdLong()) return;
-                        VideoThread.getThread(searchResult.getKey(), channel, sender).start();
+                        VideoThread.getThread(searchResult.getKey(), channel, user).start();
                         message2.delete().queue();
                     }));
                 }

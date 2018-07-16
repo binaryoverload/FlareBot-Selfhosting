@@ -149,15 +149,15 @@ public class VideoThread extends Thread {
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
                 int size = playlist.getTracks().size();
+                List<AudioTrack> tracks = playlist.getTracks();
+                tracks.forEach(track -> {
+                    track.setUserData(user.getId());
+                });
                 if(Client.instance()
                         .getPlayer(channel.getGuild().getId())
                         .getPlayingTrack() != null) {
-                    Client.instance().getTracks(channel.getGuild().getId()).addAll(playlist.getTracks());
+                    Client.instance().getTracks(channel.getGuild().getId()).addAll(tracks);
                 } else {
-                    List<AudioTrack> tracks = playlist.getTracks();
-                    tracks.forEach(track -> {
-                        track.setUserData(user.getId());
-                    });
                     AudioTrack firstTrack = tracks.get(0);
                     tracks.remove(0);
                     Client.instance().getPlayer(channel.getGuild().getId()).playTrack(firstTrack);
