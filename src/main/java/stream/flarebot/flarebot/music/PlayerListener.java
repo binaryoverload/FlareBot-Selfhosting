@@ -35,9 +35,9 @@ public class PlayerListener extends AudioEventAdapterWrapped {
         GuildWrapper wrapper = DataHandler.getGuild(Long.parseLong(guildId));
         super.onEvent(event);
         if(event instanceof TrackEndEvent) {
-            VoteUtil.remove(SkipCommand.getSkipUUID(), wrapper.getGuild());
             TrackEndEvent endEvent = (TrackEndEvent) event;
             if(endEvent.getReason().equals(AudioTrackEndReason.FINISHED)) {
+                VoteUtil.remove(SkipCommand.getSkipUUID(), wrapper.getGuild());
                 if(Client.instance().getTracks(guildId).size() > 0) {
                     Client.instance().getPlayer(guildId).playTrack(Client.instance().getTracks(guildId).get(0));
                     Client.instance().getTracks(guildId).remove(0);
