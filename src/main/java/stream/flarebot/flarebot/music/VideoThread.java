@@ -213,7 +213,6 @@ public class VideoThread extends Thread {
         thread.channel = channel;
         thread.user = user;
         thread.search = true;
-        thread.extractor = new YouTubeSearchExtractor();
         return thread;
     }
 

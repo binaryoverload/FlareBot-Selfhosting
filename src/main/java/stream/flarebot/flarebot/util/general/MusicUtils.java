@@ -21,6 +21,13 @@ public class MusicUtils {
     public static final Pattern YOUTUBE_SONG_OR_PLAYLIST = Pattern
             .compile("(?:https?:\\/\\/)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?\\/(?:watch\\?v=|playlist\\?list=)([0-9A-z-_]+)(?:&list=([0-9A-z-_]+))?");
 
+    /**
+     * Joins the bot to a {@link net.dv8tion.jda.core.entities.VoiceChannel}
+     *
+     * @param channel the {@link TextChannel} to use for errors
+     * @param member The {@link Member} to join a voice channel with
+     * @return true if failed false if success
+     */
     public static boolean joinChannel(TextChannel channel, Member member) {
         if (channel.getGuild().getSelfMember()
                 .hasPermission(member.getVoiceState().getChannel(), Permission.VOICE_CONNECT) &&
@@ -32,16 +39,16 @@ public class MusicUtils {
                     .hasPermission(member.getVoiceState().getChannel(), Permission.MANAGE_CHANNEL)) {
                 MessageUtils.sendErrorMessage("We can't join :(\n\nThe channel user limit has been reached and we don't have the 'Manage Channel' permission to " +
                         "bypass it!", channel);
-                return false;
+                return true;
             }
             Client.instance().getLink(channel.getGuild().getId()).connect(member.getVoiceState().getChannel());
-            return true;
+            return false;
         } else {
             MessageUtils.sendErrorMessage("I do not have permission to " + (!channel.getGuild().getSelfMember()
                     .hasPermission(member.getVoiceState()
                             .getChannel(), Permission.VOICE_CONNECT) ?
                     "connect" : "speak") + " in your voice channel!", channel);
-            return false;
+            return true;
         }
     }
 

@@ -12,6 +12,7 @@ import stream.flarebot.flarebot.music.VideoThread;
 import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
+import stream.flarebot.flarebot.util.general.MusicUtils;
 
 import java.awt.Color;
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ public class PlayCommand implements Command {
                             ":zzz: :night_with_stars:").setColor(Color.blue).build()).queue();
                 }
             }
-            if (SearchCommand.joinChannel(guild, channel, member)) return;
+            if (MusicUtils.joinChannel(channel, member)) return;
             if (args[0].startsWith("http") || args[0].startsWith("www.")) {
                 VideoThread.getThread(args[0], channel, sender).start();
             } else {

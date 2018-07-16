@@ -1,14 +1,14 @@
 package stream.flarebot.flarebot.util;
 
-import stream.flarebot.flarebot.music.VideoThread;
+import stream.flarebot.flarebot.util.general.MusicUtils;
 
 import java.util.regex.Pattern;
 
 public enum SourceProvider {
-    YOUTUBE(VideoThread.YOUTUBE_PATTERN),
-    SOUNDCLOUD(VideoThread.SOUNDCLOUD_PATTERN),
-    MIXER(VideoThread.MIXER_PATTERN),
-    TWITCH(VideoThread.TWITCH_PATTERN);
+    YOUTUBE(MusicUtils.YOUTUBE_PATTERN),
+    SOUNDCLOUD(MusicUtils.SOUNDCLOUD_PATTERN),
+    MIXER(MusicUtils.MIXER_PATTERN),
+    TWITCH(MusicUtils.TWITCH_PATTERN);
 
     public static final SourceProvider[] values = values();
 

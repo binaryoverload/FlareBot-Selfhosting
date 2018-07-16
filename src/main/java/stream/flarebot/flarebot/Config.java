@@ -57,7 +57,7 @@ public class Config {
     private boolean twitch;
     private boolean soundCloud;
 
-    private String souldcloudApi;
+    private String soundcloudApi;
 
     // DB
     @Nonnull
@@ -138,8 +138,8 @@ public class Config {
             soundCloud = (boolean) config.getOrDefault("soundCloud", false);
 
             if(soundCloud) {
-                souldcloudApi = (String) config.getOrDefault("soundCloudClientId", "");
-                if(souldcloudApi.isEmpty()) {
+                soundcloudApi = (String) config.getOrDefault("soundCloudClientId", "");
+                if(soundcloudApi.isEmpty()) {
                     /*log.error("Sound cloud is enabled but no client id is present!");
                     System.exit(1);*/
                 }
@@ -339,6 +339,6 @@ public class Config {
     }
 
     /*public String getSouldcloudApi() {
-        return souldcloudApi;
+        return soundcloudApi;
     }*/
 }
