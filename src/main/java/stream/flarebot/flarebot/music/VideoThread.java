@@ -1,11 +1,8 @@
 package stream.flarebot.flarebot.music;
 
-import com.arsenarsen.lavaplayerbridge.PlayerManager;
-import com.google.gson.JsonObject;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
@@ -26,55 +23,27 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import stream.flarebot.flarebot.Client;
 import stream.flarebot.flarebot.Config;
-import stream.flarebot.flarebot.FlareBot;
-import stream.flarebot.flarebot.music.extractors.Extractor;
-import stream.flarebot.flarebot.music.extractors.RandomExtractor;
-import stream.flarebot.flarebot.music.extractors.SavedPlaylistExtractor;
-import stream.flarebot.flarebot.music.extractors.YouTubeExtractor;
 import stream.flarebot.flarebot.music.extractors.YouTubeSearchExtractor;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.SourceProvider;
 import stream.flarebot.flarebot.util.WebUtils;
-import stream.flarebot.flarebot.util.buttons.ButtonRunnable;
 import stream.flarebot.flarebot.util.buttons.ButtonUtil;
+import stream.flarebot.flarebot.util.general.MusicUtils;
 import stream.flarebot.flarebot.util.objects.ButtonGroup;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class VideoThread extends Thread {
-
-    private static PlayerManager manager;
-    private static final List<Class<? extends Extractor>> extractors = Arrays.asList(YouTubeExtractor.class,
-            SavedPlaylistExtractor.class, RandomExtractor.class);
-    private static final Set<Class<? extends AudioSourceManager>> managers = new HashSet<>();
     public static final ThreadGroup VIDEO_THREADS = new ThreadGroup("Video Threads");
     private User user;
     private TextChannel channel;
     private String url;
     private boolean search = false;
-    private Extractor extractor;
-
-    public static final Pattern YOUTUBE_PATTERN = Pattern.compile("(?:https?:\\/\\/)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?\\/(?:watch\\?v=|playlist\\?list=)([0-9A-z-_]+)(?:&list=([0-9A-z-_]+))?");
-    public static final Pattern SOUNDCLOUD_PATTERN = Pattern.compile("(?:https?://)(?:www\\.|m\\.)?soundcloud\\.com/" +
-            "([a-zA-Z0-9_-]{4,25})/([\\w_-]{4,})");
-    public static final Pattern TWITCH_PATTERN = Pattern.compile("(?:https?://)(?:www\\.)?twitch\\.tv/" +
-            "([\\w_-]{4,25})");
-    public static final Pattern MIXER_PATTERN = Pattern.compile("(?:https?://)(?:www\\.)?mixer\\.com/" +
-            "([\\w_-]{4,25})");
-
-    private static final Pattern YOUTUBE_SONG_OR_PLAYLIST = Pattern
-            .compile("(?:https?:\\/\\/)?(?:www\\.|m\\.)?(?:youtube\\.com|youtu\\.be)?\\/(?:watch\\?v=|playlist\\?list=)([0-9A-z-_]+)(?:&list=([0-9A-z-_]+))?");
 
     private static final String YOUTUBE_SONG = "https://youtube.com/watch?v=%s";
     private static final String YOUTUBE_PLAYLIST = "https://youtube.com/playlist?list=%s";
@@ -133,7 +102,7 @@ public class VideoThread extends Thread {
                 }
                 message.editMessage(new EmbedBuilder().setTitle("Loaded Playlist").addField("Playlist", name, true).addField("Song count", String.valueOf(items.length), true).build()).queue();
             } else {
-                Matcher matcher = YOUTUBE_SONG_OR_PLAYLIST.matcher(url);
+                Matcher matcher = MusicUtils.YOUTUBE_SONG_OR_PLAYLIST.matcher(url);
                 if (matcher.matches()) {
                     ButtonGroup buttonGroup = new ButtonGroup(user.getIdLong(), "youtube-song/playlist");
                     buttonGroup.addButton(new ButtonGroup.Button("\u0031\u20E3", (ownerID, user, message1) -> {

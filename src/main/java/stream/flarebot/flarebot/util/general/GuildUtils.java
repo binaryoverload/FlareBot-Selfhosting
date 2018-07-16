@@ -278,32 +278,4 @@ public class GuildUtils {
                 (guild.getSelfMember().hasPermission(Permission.NICKNAME_CHANGE) ||
                         guild.getSelfMember().hasPermission(Permission.NICKNAME_MANAGE));
     }
-
-    /**
-     * Joins the bot to a {@link TextChannel}.
-     *
-     * @param channel The chanel to send an error message to in case this fails.
-     * @param member  The member requesting the join. This is also how we determine what channel to join.
-     */
-    public static void joinChannel(TextChannel channel, Member member) {
-        if (channel.getGuild().getSelfMember()
-                .hasPermission(member.getVoiceState().getChannel(), Permission.VOICE_CONNECT) &&
-                channel.getGuild().getSelfMember()
-                        .hasPermission(member.getVoiceState().getChannel(), Permission.VOICE_SPEAK)) {
-            if (member.getVoiceState().getChannel().getUserLimit() > 0 && member.getVoiceState().getChannel()
-                    .getMembers().size()
-                    >= member.getVoiceState().getChannel().getUserLimit() && !member.getGuild().getSelfMember()
-                    .hasPermission(member.getVoiceState().getChannel(), Permission.MANAGE_CHANNEL)) {
-                MessageUtils.sendErrorMessage("We can't join :(\n\nThe channel user limit has been reached and we don't have the 'Manage Channel' permission to " +
-                        "bypass it!", channel);
-                return;
-            }
-            Client.instance().getLink(channel.getGuild().getId()).connect(member.getVoiceState().getChannel());
-        } else {
-            MessageUtils.sendErrorMessage("I do not have permission to " + (!channel.getGuild().getSelfMember()
-                    .hasPermission(member.getVoiceState()
-                            .getChannel(), Permission.VOICE_CONNECT) ?
-                    "connect" : "speak") + " in your voice channel!", channel);
-        }
-    }
 }

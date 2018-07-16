@@ -14,6 +14,9 @@ import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.buttons.ButtonRunnable;
 import stream.flarebot.flarebot.util.buttons.ButtonUtil;
+import stream.flarebot.flarebot.util.general.GeneralUtils;
+import stream.flarebot.flarebot.util.general.GuildUtils;
+import stream.flarebot.flarebot.util.general.MusicUtils;
 import stream.flarebot.flarebot.util.objects.ButtonGroup;
 
 import java.util.List;
@@ -28,7 +31,7 @@ public class SearchCommand implements Command {
             return;
         }
 
-        if (joinChannel(guild, channel, member)) return;
+        if (MusicUtils.joinChannel(channel, member)) return;
 
         String search = MessageUtils.getMessage(args);
         search = MessageUtils.escapeMarkdown(search);
@@ -77,19 +80,6 @@ public class SearchCommand implements Command {
                 ButtonUtil.sendButtonedMessage(channel, new EmbedBuilder().setTitle("Search Results").appendDescription(sb.toString()).setFooter("\uD83C\uDFB5 - song, \uD83C\uDFB6 - playlist", sender.getAvatarUrl()).build(), group);
             }
         });
-    }
-
-    public static boolean joinChannel(GuildWrapper guild, TextChannel channel, Member member) {
-        if (member.getVoiceState().inVoiceChannel()) {
-            if (channel.getGuild().getSelfMember().getVoiceState().inVoiceChannel() &&
-                    !(channel.getGuild().getSelfMember().getVoiceState().getAudioChannel().getId()
-                            .equals(member.getVoiceState().getAudioChannel().getId()))) {
-                MessageUtils.sendErrorMessage("I cannot join your channel! I am already in a channel!", channel);
-                return true;
-            }
-            Client.instance().getLink(guild.getGuildId()).connect(member.getVoiceState().getChannel());
-        }
-        return false;
     }
 
     @Override
