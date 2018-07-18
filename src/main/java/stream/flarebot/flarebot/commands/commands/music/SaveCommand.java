@@ -1,6 +1,7 @@
 package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.player.Track;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -34,23 +35,20 @@ public class SaveCommand implements Command {
             MessageUtils.sendErrorMessage("Name can only be a maximum of 20 characters!", channel);
             return;
         }
-        if (!Client.instance().getMusicManager().hasPlayer(channel.getGuild().getId())) {
+        if (Client.instance().getTracks(guild.getGuildId()).size() == 0) {
             MessageUtils.sendErrorMessage("Your playlist is empty!", channel);
             return;
         }
-        Queue<Track> playlist = Client.instance().getMusicManager().getPlayer(guild.getGuildId())
-                .getPlaylist();
-        Track currentlyPlaying =
-                Client.instance().getMusicManager().getPlayer(guild.getGuildId()).getPlayingTrack();
+        List<AudioTrack> playlist = Client.instance().getTracks(guild.getGuildId());
+        AudioTrack currentlyPlaying =
+                Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack();
 
         channel.sendTyping().complete();
 
         List<String> tracks = playlist.stream()
-                .map(track -> track
-                        .getTrack()
-                        .getIdentifier()).collect(Collectors.toList());
+                .map(track -> track.getInfo().uri).collect(Collectors.toList());
         if (currentlyPlaying != null) {
-            tracks.add(currentlyPlaying.getTrack().getIdentifier());
+            tracks.add(0, currentlyPlaying.getInfo().uri);
         }
 
         if (tracks.isEmpty()) {

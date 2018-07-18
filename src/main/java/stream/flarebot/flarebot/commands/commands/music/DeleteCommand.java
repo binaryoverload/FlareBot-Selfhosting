@@ -29,7 +29,7 @@ public class DeleteCommand implements Command {
             select.setString(1, name);
             select.setLong(2, channel.getGuild().getIdLong());
             ResultSet set = select.executeQuery();
-            if (!set.isBeforeFirst()) {
+            if (set.next()) {
                 PreparedStatement delete = connection.prepareStatement("DELETE FROM playlists WHERE playlist_name = ? AND guild_id = ?");
                 delete.setString(1, name);
                 delete.setLong(2, channel.getGuild().getIdLong());

@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.requests.ErrorResponse;
 import net.dv8tion.jda.core.requests.RestAction;

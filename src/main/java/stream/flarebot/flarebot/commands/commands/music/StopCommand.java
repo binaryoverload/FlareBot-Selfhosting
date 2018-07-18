@@ -15,7 +15,8 @@ public class StopCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        Client.instance().getMusicManager().getPlayer(channel.getGuild().getId()).stop();
+        Client.instance().getPlayer(channel.getGuild().getId()).stopTrack();
+        Client.instance().getTracks(guild.getGuildId()).clear();
     }
 
     @Override

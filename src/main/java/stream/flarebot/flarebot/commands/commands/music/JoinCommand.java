@@ -10,6 +10,7 @@ import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.general.GuildUtils;
+import stream.flarebot.flarebot.util.general.MusicUtils;
 
 public class JoinCommand implements Command {
 
@@ -32,7 +33,7 @@ public class JoinCommand implements Command {
                 MessageUtils.sendErrorMessage("You need the permission `" + Permission.JOIN_OTHER + "` for me to join your voice channel while I'm in one!", channel);
                 return;
             }
-            GuildUtils.joinChannel(channel, member);
+            MusicUtils.joinChannel(channel, member);
         }
     }
 

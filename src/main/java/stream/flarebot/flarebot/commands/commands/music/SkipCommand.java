@@ -2,6 +2,8 @@ package stream.flarebot.flarebot.commands.commands.music;
 
 import com.arsenarsen.lavaplayerbridge.PlayerManager;
 import com.arsenarsen.lavaplayerbridge.player.Track;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import lavalink.client.io.Link;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Member;
@@ -16,6 +18,7 @@ import stream.flarebot.flarebot.objects.GuildWrapper;
 import stream.flarebot.flarebot.permissions.Permission;
 import stream.flarebot.flarebot.util.MessageUtils;
 import stream.flarebot.flarebot.util.buttons.ButtonGroupConstants;
+import stream.flarebot.flarebot.util.general.MusicUtils;
 import stream.flarebot.flarebot.util.objects.ButtonGroup;
 import stream.flarebot.flarebot.util.votes.VoteGroup;
 import stream.flarebot.flarebot.util.votes.VoteUtil;
@@ -31,11 +34,9 @@ public class SkipCommand implements Command {
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
         boolean songMessage = message.getAuthor().getIdLong() == Getters.getSelfUser().getIdLong();
-        PlayerManager musicManager = Client.instance().getMusicManager();
-        if (!channel.getGuild().getAudioManager().isConnected() ||
-                musicManager.getPlayer(channel.getGuild().getId()).getPlayingTrack() == null) {
+        if (!Client.instance().getLink(guild.getGuildId()).getState().equals(Link.State.CONNECTED) ||
+                Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack() == null) {
             MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("I am not playing anything!").build(), TimeUnit.SECONDS.toMillis(5), channel);
-            channel.sendMessage("I am not playing anything!").queue();
             return;
         }
         if (member.getVoiceState().inVoiceChannel() && !channel.getGuild().getSelfMember().getVoiceState().getChannel()
@@ -45,10 +46,10 @@ public class SkipCommand implements Command {
             MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("You must be in the channel in order to skip songs!").build(), TimeUnit.SECONDS.toMillis(5), channel);
             return;
         }
-        Track currentTrack = musicManager.getPlayer(guild.getGuildId()).getPlayingTrack();
-        if (args.length == 0 && currentTrack.getMeta().get("requester").equals(sender.getId())) {
+        AudioTrack currentTrack = Client.instance().getPlayer(guild.getGuildId()).getPlayingTrack();
+        if (args.length == 0 && currentTrack.getUserData().equals(sender.getId())) {
+            MusicUtils.skip(guild.getGuildId());
             MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("Skipped your own song!").build(), TimeUnit.SECONDS.toMillis(5), channel);
-            musicManager.getPlayer(guild.getGuildId()).skip();
             if (songMessage)
                 SongCommand.updateSongMessage(sender, message, channel);
             return;
@@ -76,18 +77,17 @@ public class SkipCommand implements Command {
                                 MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("Results are in: Keep!").build(), TimeUnit.SECONDS.toMillis(5),  channel);
                             } else {
                                 MessageUtils.sendAutoDeletedMessage(new MessageBuilder().append("Skipping!").build(), TimeUnit.SECONDS.toMillis(5),  channel);
+                                MusicUtils.skip(guild.getGuildId());
                                 if (songMessage)
                                     SongCommand.updateSongMessage(sender, message, channel);
-                                musicManager.getPlayer(guild.getGuildId()).skip();
                             }
                         }, group, TimeUnit.MINUTES.toMillis(1), channel, sender, ButtonGroupConstants.VOTE_SKIP,
                         new ButtonGroup.Button("\u23ED", (owner, user, message1) -> {
                             if (getPermissions(channel).hasPermission(channel.getGuild().getMember(user), Permission.SKIP_FORCE)) {
-                                musicManager.getPlayer(channel.getGuild().getId()).skip();
+                                MusicUtils.skip(guild.getGuildId());
                                 if (songMessage) {
                                     SongCommand.updateSongMessage(user, message1, channel);
                                 }
-                                musicManager.getPlayer(guild.getGuildId()).skip();
                                 VoteUtil.remove(skipUUID, guild.getGuild());
                             } else {
                                 channel.sendMessage("You are missing the permission `" + Permission.SKIP_FORCE + "` which is required for use of this button!")
@@ -98,10 +98,10 @@ public class SkipCommand implements Command {
         } else {
             if (args[0].equalsIgnoreCase("force")) {
                 if (getPermissions(channel).hasPermission(member, Permission.SKIP_FORCE)) {
+                    MusicUtils.skip(guild.getGuildId());
                     if (songMessage)
                         SongCommand.updateSongMessage(sender, message, channel);
                     VoteUtil.remove(skipUUID, guild.getGuild());
-                    musicManager.getPlayer(guild.getGuildId()).skip();
                 } else {
                     channel.sendMessage("You are missing the permission `" + Permission.SKIP_FORCE + "` which is required for use of this command!")
                             .queue();

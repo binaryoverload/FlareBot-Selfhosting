@@ -3,6 +3,8 @@ package stream.flarebot.flarebot.commands.commands.music;
 import com.arsenarsen.lavaplayerbridge.PlayerManager;
 import com.arsenarsen.lavaplayerbridge.player.Player;
 import com.arsenarsen.lavaplayerbridge.player.Track;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import lavalink.client.player.IPlayer;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
@@ -36,36 +38,33 @@ public class SongCommand implements Command {
 
     @Override
     public void onCommand(User sender, GuildWrapper guild, TextChannel channel, Message message, String[] args, Member member) {
-        PlayerManager manager = Client.instance().getMusicManager();
-        if (manager.getPlayer(channel.getGuild().getId()).getPlayingTrack() != null) {
-            Track track = manager.getPlayer(channel.getGuild().getId()).getPlayingTrack();
+        IPlayer player = Client.instance().getPlayer(guild.getGuildId());
+        if (player.getPlayingTrack() != null) {
+            AudioTrack track = player.getPlayingTrack();
             EmbedBuilder eb = MessageUtils.getEmbed(sender)
                     .addField("Current Song", getLink(track), false)
-                    .setThumbnail("https://img.youtube.com/vi/" + track.getTrack().getIdentifier() + "/hqdefault.jpg");
-            if (track.getTrack().getInfo().isStream)
+                    .setThumbnail("https://img.youtube.com/vi/" + track.getIdentifier() + "/hqdefault.jpg");
+            if (track.getInfo().isStream)
                 eb.addField("Amount Played", "Issa livestream ;)", false);
             else
-                eb.addField("Amount Played", GeneralUtils.getProgressBar(track), true)
-                        .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(track.getTrack().getPosition()),
-                                FormatUtils.formatDuration(track.getTrack().getDuration())), false);
+                eb.addField("Amount Played", GeneralUtils.getProgressBar(track, Client.instance().getPlayer(guild.getGuildId())), true)
+                        .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(Client.instance().getPlayer(channel.getGuild().getId()).getTrackPosition()),
+                                FormatUtils.formatDuration(track.getDuration())), false);
             ButtonGroup buttonGroup = new ButtonGroup(sender.getIdLong(), ButtonGroupConstants.SONG);
             buttonGroup.addButton(new ButtonGroup.Button("\u23EF", (owner, user, message1) -> {
-                if (manager.hasPlayer(guild.getGuildId())) {
-                    if (manager.getPlayer(guild.getGuild().getId()).getPaused()) {
+                    if (player.isPaused()) {
                         if (getPermissions(channel).hasPermission(guild.getGuild().getMember(user), Permission.RESUME_COMMAND)) {
-                            manager.getPlayer(guild.getGuild().getId()).play();
+                            player.setPaused(false);
                         }
                     } else {
                         if (getPermissions(channel).hasPermission(guild.getGuild().getMember(user), Permission.PAUSE_COMMAND)) {
-                            manager.getPlayer(guild.getGuild().getId()).setPaused(true);
+                            player.setPaused(true);
                         }
                     }
-                }
             }));
             buttonGroup.addButton(new ButtonGroup.Button("\u23F9", (owner, user, message1) -> {
-                if (manager.hasPlayer(guild.getGuildId()) &&
-                        getPermissions(channel).hasPermission(guild.getGuild().getMember(user), Permission.STOP_COMMAND)) {
-                    manager.getPlayer(guild.getGuildId()).stop();
+                if (getPermissions(channel).hasPermission(guild.getGuild().getMember(user), Permission.STOP_COMMAND)) {
+                    player.stopTrack();
                 }
             }));
             buttonGroup.addButton(new ButtonGroup.Button("\u23ED", (owner, user, message1) -> {
@@ -87,9 +86,9 @@ public class SongCommand implements Command {
         }
     }
 
-    public static String getLink(Track track) {
-        String name = String.valueOf(track.getTrack().getInfo().title).replace("`", "'");
-        String link = YouTubeExtractor.WATCH_URL + track.getTrack().getIdentifier();
+    public static String getLink(AudioTrack track) {
+        String name = String.valueOf(track.getInfo().title).replace("`", "'");
+        String link = YouTubeExtractor.WATCH_URL + track.getIdentifier();
         return String.format("[`%s`](%s)", name, link);
     }
 
@@ -124,18 +123,18 @@ public class SongCommand implements Command {
     }
 
     public static void updateSongMessage(User sender, Message message, TextChannel channel) {
-        Track track = Client.instance().getMusicManager().getPlayer(channel.getGuild().getId()).getPlayingTrack();
+        AudioTrack track = Client.instance().getPlayer(channel.getGuild().getId()).getPlayingTrack();
         if (track == null)
             return;
         EmbedBuilder eb = MessageUtils.getEmbed(sender)
                 .addField("Current Song", getLink(track), false)
-                .setThumbnail("https://img.youtube.com/vi/" + track.getTrack().getIdentifier() + "/hqdefault.jpg");
-        if (track.getTrack().getInfo().isStream)
+                .setThumbnail(GeneralUtils.getTrackPreview(track));
+        if (track.getInfo().isStream)
             eb.addField("Amount Played", "Issa livestream ;)", false);
         else
-            eb.addField("Amount Played", GeneralUtils.getProgressBar(track), true)
-                    .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(track.getTrack().getPosition()),
-                            FormatUtils.formatDuration(track.getTrack().getDuration())), false);
+            eb.addField("Amount Played", GeneralUtils.getProgressBar(track, Client.instance().getPlayer(channel.getGuild().getId())), true)
+                    .addField("Time", String.format("%s / %s", FormatUtils.formatDuration(Client.instance().getPlayer(channel.getGuild().getId()).getTrackPosition()),
+                            FormatUtils.formatDuration(track.getDuration())), false);
         message.editMessage(eb.build()).queue();
     }
 
@@ -146,13 +145,11 @@ public class SongCommand implements Command {
                 songMessages.remove(pair.getKey());
                 break;
             }
-            Player player = Client.instance().getMusicManager().getPlayer(channel.getGuild().getId());
-            Track track = player.getPlayingTrack();
+            IPlayer player = Client.instance().getPlayer(channel.getGuild().getId());
+            AudioTrack track = player.getPlayingTrack();
             if (track != null) {
-                if(!player.getPaused()) {
-                    channel.getMessageById(pair.getValue()).queue(message -> {
-                        updateSongMessage(Client.instance().getSelfUser(), message, channel);
-                    });
+                if(!player.isPaused()) {
+                    channel.getMessageById(pair.getValue()).queue(message -> updateSongMessage(Client.instance().getSelfUser(), message, channel));
                 }
             }
         }

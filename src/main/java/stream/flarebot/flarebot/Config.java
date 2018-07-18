@@ -15,7 +15,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Config {
@@ -50,6 +53,12 @@ public class Config {
     @Nonnull
     private String youtubeApi;
 
+    private boolean mixer;
+    private boolean twitch;
+    private boolean soundCloud;
+
+    private String soundcloudApi;
+
     // DB
     @Nonnull
     private String databaseUsername;
@@ -78,10 +87,14 @@ public class Config {
     private WebhookClient statusLogHook;
     private String hasteServer;
 
+    private String userId;
+
     private ArrayList<Long> admins;
 
     // Err, not sure what to really name this.
     private int numShards;
+
+    private List<LinkedHashMap<String, Object>> nodes;
 
     public Config(String fileName) throws FileNotFoundException {
         this(getConfig(fileName));
@@ -112,6 +125,24 @@ public class Config {
             if (youtubeApi.isEmpty()) {
                 log.error("No YouTube API key was specified! Please provide a key to start the bot.");
                 System.exit(1);
+            }
+
+            userId = (String) config.getOrDefault("userId", "");
+            if (userId.isEmpty()) {
+                log.error("No User Id was specified! Please provide a user id to start the bot.");
+                System.exit(1);
+            }
+
+            mixer = (boolean) config.getOrDefault("mixer", false);
+            twitch = (boolean) config.getOrDefault("twitch", false);
+            soundCloud = (boolean) config.getOrDefault("soundCloud", false);
+
+            if(soundCloud) {
+                soundcloudApi = (String) config.getOrDefault("soundCloudClientId", "");
+                if(soundcloudApi.isEmpty()) {
+                    /*log.error("Sound cloud is enabled but no client id is present!");
+                    System.exit(1);*/
+                }
             }
 
             Object db = config.get("database");
@@ -155,6 +186,8 @@ public class Config {
             importantLogWebhook = (String) config.getOrDefault("importantLogWebhook", "");
             statusLogWebhook = (String) config.getOrDefault("statusLogWebhook", "");
             hasteServer = (String) config.getOrDefault("hasteServer", null);
+
+            nodes = (List<LinkedHashMap<String, Object>>) config.getOrDefault("nodes", null);
 
             Object admins = config.getOrDefault("admins", new ArrayList<Long>());
             if (admins instanceof ArrayList && !((ArrayList) admins).isEmpty()) {
@@ -201,6 +234,18 @@ public class Config {
     @Nonnull
     public String getYoutubeApi() {
         return youtubeApi;
+    }
+
+    public boolean isMixerEnabled() {
+        return  mixer;
+    }
+
+    public boolean isTwitchEnabled() {
+        return  twitch;
+    }
+
+    public boolean isSoundCloudEnabled() {
+        return  soundCloud;
     }
 
     @Nonnull
@@ -285,4 +330,15 @@ public class Config {
         return numShards;
     }
 
+    public List<LinkedHashMap<String, Object>> getNodes() {
+        return nodes;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    /*public String getSouldcloudApi() {
+        return soundcloudApi;
+    }*/
 }

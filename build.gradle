@@ -64,6 +64,7 @@ dependencies {
     compile group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.3.0'
     compile group: 'io.prometheus', name: 'simpleclient_logback', version: '0.3.0'
     compile group: 'io.prometheus', name: 'simpleclient_httpserver', version: '0.3.0'
+    compile "com.github.Frederikam:Lavalink:f81b3f3d0a63876901fd103e60a78a0b36ad7da3"
 }
 
 compileJava.options.encoding = 'UTF-8'

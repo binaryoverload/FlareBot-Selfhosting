@@ -112,15 +112,9 @@ public class Getters {
     public static long getActiveVoiceChannels() {
         return getShardManager().getGuildCache().stream()
                 .filter(c -> c.getAudioManager().getConnectedChannel() != null)
-                .map(g -> client().getMusicManager().getPlayer(g.getId()))
-                .filter(p -> p != null && p.getPlayingTrack() != null && !p.getPaused())
+                .map(g -> client().getPlayer(g.getId()))
+                .filter(p -> p != null && p.getPlayingTrack() != null && !p.isPaused())
                 .count();
-    }
-
-    public static int getSongsQueued() {
-        return client().getMusicManager().getPlayers().stream()
-                .mapToInt(p -> p.getPlaylist().size())
-                .sum();
     }
 
     // Other

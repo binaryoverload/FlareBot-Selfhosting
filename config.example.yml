@@ -22,6 +22,11 @@ token: ''
 # This is the YouTube API key, you can generate one here: https://console.developers.google.com
 youtubeApi: ''
 
+# Defines what platforms you want to support. make sure your lavalink server also has these enabled if you do
+# mixer: true
+# twitch: true
+# soundCloud: true
+
 # REQUIRED
 # This is used to connect to the database.
 database:
@@ -39,6 +44,17 @@ presence: 'Walshy is cool'
 #redisHost: 'localhost'
 #redisPort: 6379
 #redisPassword: 'password'
+
+# REQUIRED
+# Defines your lavalink nodes
+nodes:
+  - address: '127.0.0.1'
+    port: 80
+    password: 'password'
+# This is for if you have multiple nodes
+#  - address: 'some other ip'
+#    port: 80
+#    password: ''
 
 errorLogWebhook: ''
 importantLogWebhook: ''
