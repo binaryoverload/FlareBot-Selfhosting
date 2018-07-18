@@ -34,7 +34,7 @@ public class VoteUtil {
         groupMap.put(id + channel.getGuild().getId(), group);
         runnableMap.put(id + channel.getGuild().getId(), voteRunnable);
 
-        buttonGroup.addButton(new ButtonGroup.Button(355776056092917761L, (owner, user1, message) -> {
+        buttonGroup.addButton(new ButtonGroup.Button(435694907768963083L, (owner, user1, message) -> {
             if (group.addVote(VoteGroup.Vote.YES, user1)) {
                 MessageUtils.sendAutoDeletedMessage(new EmbedBuilder().setDescription("You voted yes on " + messageDesc).build(), 2000, channel);
             } else {
@@ -42,7 +42,7 @@ public class VoteUtil {
             }
         }));
 
-        buttonGroup.addButton(new ButtonGroup.Button(355776081384570881L, (owner, user1, message) -> {
+        buttonGroup.addButton(new ButtonGroup.Button(435694902219898880L, (owner, user1, message) -> {
             if (group.addVote(VoteGroup.Vote.NO, user1)) {
                 MessageUtils.sendAutoDeletedMessage(new EmbedBuilder().setDescription("You voted no on " + messageDesc).build(), 2000, channel);
             } else {
