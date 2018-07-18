@@ -73,13 +73,13 @@ public class PlayerListener extends AudioEventAdapterWrapped {
                         AudioTrack track = Client.instance().getPlayer(guildId).getPlayingTrack();
                         List<AudioTrack> tracks = Client.instance().getTracks(guildId);
                         c.sendMessage(MessageUtils.getEmbed()
-                                .addField("Now Playing", SongCommand.getLink(track), false)
+                                .addField("Now Playing", track.getInfo().uri, false)
                                 .addField("Duration", FormatUtils
                                         .formatDuration(track.getDuration()), false)
                                 .addField("Requested by",
                                         String.format("<@!%s>", track.getUserData()), false)
                                 .addField("Next up", tracks.isEmpty() ? "Nothing" :
-                                        SongCommand.getLink(tracks.get(1)), false)
+                                        tracks.get(1).getInfo().uri, false)
                                 .setImage(GeneralUtils.getTrackPreview(track))
                                 .build()).queue();
                     } else {
