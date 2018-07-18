@@ -74,9 +74,6 @@ public class SongCommand implements Command {
                         cmd.onCommand(user, guild, channel, message1, new String[0], guild.getGuild().getMember(user));
                 }
             }));
-            buttonGroup.addButton(new ButtonGroup.Button("\uD83D\uDD01", (ownerID, user, message1) -> {
-                updateSongMessage(user, message1, message1.getTextChannel());
-            }));
             Message message1 = ButtonUtil.sendReturnedButtonedMessage(channel, eb.build(), buttonGroup);
             songMessages.put(channel.getIdLong(), message1.getIdLong());
         } else {
