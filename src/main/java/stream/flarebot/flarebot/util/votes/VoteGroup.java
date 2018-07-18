@@ -41,7 +41,7 @@ public class VoteGroup {
                 yesVotes++;
 
             if (allowedUsers.size() == totalVotes()) {
-                VoteUtil.finishNow(id, Getters.getGuildById(voteMessage.getId()));
+                VoteUtil.finishNow(id, Getters.getGuildById(voteMessage.getGuild().getId()));
                 return true;
             }
 
