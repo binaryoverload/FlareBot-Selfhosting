@@ -42,7 +42,7 @@ public class SongCommand implements Command {
         if (player.getPlayingTrack() != null) {
             AudioTrack track = player.getPlayingTrack();
             EmbedBuilder eb = MessageUtils.getEmbed(sender)
-                    .addField("Current Song", track.getInfo().uri, false)
+                    .addField("Current Song", getLink(track), false)
                     .setThumbnail("https://img.youtube.com/vi/" + track.getIdentifier() + "/hqdefault.jpg");
             if (track.getInfo().isStream)
                 eb.addField("Amount Played", "Issa livestream ;)", false);
@@ -86,6 +86,12 @@ public class SongCommand implements Command {
         }
     }
 
+    public static String getLink(AudioTrack track) {
+        String name = String.valueOf(track.getInfo().title).replace("`", "'");
+        String link = track.getInfo().uri;
+        return String.format("[`%s`](%s)", name, link);
+    }
+
     @Override
     public String getCommand() {
         return "song";
@@ -121,7 +127,7 @@ public class SongCommand implements Command {
         if (track == null)
             return;
         EmbedBuilder eb = MessageUtils.getEmbed(sender)
-                .addField("Current Song", track.getInfo().uri, false)
+                .addField("Current Song", getLink(track), false)
                 .setThumbnail(GeneralUtils.getTrackPreview(track));
         if (track.getInfo().isStream)
             eb.addField("Amount Played", "Issa livestream ;)", false);
