@@ -72,16 +72,16 @@ public class PlayerListener extends AudioEventAdapterWrapped {
                             Permission.MESSAGE_WRITE)) {
                         AudioTrack track = Client.instance().getPlayer(guildId).getPlayingTrack();
                         List<AudioTrack> tracks = Client.instance().getTracks(guildId);
-                        c.sendMessage(MessageUtils.getEmbed()
-                                .addField("Now Playing", SongCommand.getLink(track), false)
-                                .addField("Duration", FormatUtils
-                                        .formatDuration(track.getDuration()), false)
-                                .addField("Requested by",
-                                        String.format("<@!%s>", track.getUserData()), false)
-                                .addField("Next up", tracks.isEmpty() ? "Nothing" :
-                                        SongCommand.getLink(tracks.get(1)), false)
-                                .setImage(GeneralUtils.getTrackPreview(track))
-                                .build()).queue();
+                            c.sendMessage(MessageUtils.getEmbed()
+                                    .addField("Now Playing", SongCommand.getLink(track), false)
+                                    .addField("Duration", FormatUtils
+                                            .formatDuration(track.getDuration()), false)
+                                    .addField("Requested by",
+                                            String.format("<@!%s>", track.getUserData()), false)
+                                    .addField("Next up", tracks.size() < 2 ? "Nothing" :
+                                            SongCommand.getLink(tracks.get(1)), false)
+                                    .setImage(GeneralUtils.getTrackPreview(track))
+                                    .build()).queue();
                     } else {
                         wrapper.setMusicAnnounceChannelId(null);
                     }

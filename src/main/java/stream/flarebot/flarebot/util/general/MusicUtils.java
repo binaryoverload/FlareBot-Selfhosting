@@ -29,6 +29,9 @@ public class MusicUtils {
      * @return true if failed false if success
      */
     public static boolean joinChannel(TextChannel channel, Member member) {
+        if(member.getVoiceState().getChannel() == null) {
+            return true;
+        }
         if (channel.getGuild().getSelfMember()
                 .hasPermission(member.getVoiceState().getChannel(), Permission.VOICE_CONNECT) &&
                 channel.getGuild().getSelfMember()
