@@ -34,17 +34,17 @@ public class NINOListener implements EventListener {
             if (wrapper.getNINO().getWhitelistedChannels().contains(event.getChannel().getIdLong()))
                 return;
 
-            if (wrapper.getModeration().isEventEnabled(wrapper, ModlogEvent.NINO)) {
-                AtomicReference<String> msg = new AtomicReference<>(FormatUtils.stripMentions(event.getMessage().getContentDisplay()));
-                URLChecker.instance().checkMessage(wrapper, event.getChannel(), msg.get(), (flag, url) -> {
-                    if (flag == null || url == null) return;
+            AtomicReference<String> msg = new AtomicReference<>(FormatUtils.stripMentions(event.getMessage().getContentDisplay()));
+            URLChecker.instance().checkMessage(wrapper, event.getChannel(), msg.get(), (flag, url) -> {
+                if (flag == null || url == null) return;
 
-                    for (String s : wrapper.getNINO().getWhitelist()) {
-                        if (url.equalsIgnoreCase(s))
-                            return;
-                    }
+                for (String s : wrapper.getNINO().getWhitelist()) {
+                    if (url.equalsIgnoreCase(s))
+                        return;
+                }
 
-                    event.getMessage().delete().queue();
+                event.getMessage().delete().queue();
+                if (wrapper.getModeration().isEventEnabled(wrapper, ModlogEvent.NINO)) {
 
                     msg.set(FormatUtils.truncate(500, event.getMessage().getContentDisplay()));
 
@@ -68,8 +68,8 @@ public class NINOListener implements EventListener {
                     ModlogHandler.getInstance().postToModlog(wrapper, ModlogEvent.NINO, event.getAuthor(),
                             eb.getFields().toArray(new MessageEmbed.Field[]{})
                     );
-                });
-            }
+                }
+            });
         }
     }
 }

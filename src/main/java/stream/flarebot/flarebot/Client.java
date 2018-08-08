@@ -23,6 +23,7 @@ import net.dv8tion.jda.core.utils.SessionControllerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stream.flarebot.flarebot.database.RedisController;
+import stream.flarebot.flarebot.mod.nino.NINOListener;
 import stream.flarebot.flarebot.music.PlayerListener;
 import stream.flarebot.flarebot.scheduler.Scheduler;
 
@@ -91,6 +92,7 @@ public class Client {
         }
         registerListener((events = new Events()));
         registerListener(new ModlogEvents());
+        registerListener(new NINOListener());
         setGame();
 
         new RedisController();
