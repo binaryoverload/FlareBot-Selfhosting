@@ -58,8 +58,8 @@ public class Client {
 
     private PlayerManager musicManager;
 
-    private Map<String, IPlayer> players = new HashMap<>();
-    private Map<String, List<AudioTrack>> tracks = new HashMap<>();
+    private Map<String, IPlayer> players = new ConcurrentHashMap<>();
+    private Map<String, List<AudioTrack>> tracks = new ConcurrentHashMap<>();
 
     private Lavalink lavalink;
 
