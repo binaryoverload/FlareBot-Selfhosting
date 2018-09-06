@@ -21,12 +21,17 @@ import stream.flarebot.flarebot.commands.Command;
 import stream.flarebot.flarebot.util.general.FormatUtils;
 
 import java.awt.Color;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -125,11 +130,23 @@ public class MessageUtils {
                     body.close();
                     return "https://hastebin.com/" + key;
                 } else {
-                    FlareBot.LOGGER.error("Local instance of hastebin is down");
+                    sendMessage(MessageType.WARNING, "Haste server down", Config.INS.getErrorLogWebhookClient());
                     return null;
                 }
             } catch (IOException | JSONException e) {
-                FlareBot.LOGGER.error("Could not make POST request to paste!", e);
+                //TODO handle this better
+                SimpleDateFormat format = new SimpleDateFormat("MM-DD HH-mm-ss");
+                File file = new File("hastelog/" + format.format(new Date()) + ".log");
+                file.getParentFile().mkdirs();
+                try {
+                    PrintWriter printWriter = new PrintWriter(new FileWriter(file));
+                    e.printStackTrace(printWriter);
+                    sendMessage(MessageType.WARNING, "Error while sending request to haste server. Check logs for more info.", Config.INS.getErrorLogWebhookClient());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    sendMessage(MessageType.WARNING, "Error while sending request to haste server, and error logging error.", Config.INS.getErrorLogWebhookClient());
+                }
+                e.printStackTrace();
                 return null;
             }
         } else {
