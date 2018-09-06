@@ -141,6 +141,8 @@ public class MessageUtils {
                 try {
                     PrintWriter printWriter = new PrintWriter(new FileWriter(file));
                     e.printStackTrace(printWriter);
+                    printWriter.flush();
+                    printWriter.close();
                     sendMessage(MessageType.WARNING, "Error while sending request to haste server. Check logs for more info.", Config.INS.getErrorLogWebhookClient());
                 } catch (IOException e1) {
                     e1.printStackTrace();
