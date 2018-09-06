@@ -135,7 +135,7 @@ public class MessageUtils {
                 }
             } catch (IOException | JSONException e) {
                 //TODO handle this better
-                SimpleDateFormat format = new SimpleDateFormat("MM-DD HH-mm-ss");
+                SimpleDateFormat format = new SimpleDateFormat("MM-dd HH-mm-ss");
                 File file = new File("hastelog/" + format.format(new Date()) + ".log");
                 file.getParentFile().mkdirs();
                 try {
